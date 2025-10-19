@@ -1,0 +1,351 @@
+(function() {
+    'use strict';
+    
+    const CONFIG = {
+        center: [-6.90767, 106.92025],
+        zoom: 15,
+        minZoom: 10,
+        maxZoom: 18,
+        baseMaps: {
+            osm: {
+                url: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+                attribution: '© <a href="https://openstreetmap.org">OpenStreetMap</a> contributors'
+            },
+            satellite: {
+                url: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
+                attribution: '© <a href="https://www.esri.com/">Esri</a>'
+            }
+        }
+    };
+    
+    function showLoading() {
+        const loading = document.getElementById('loading');
+        if (loading) loading.classList.add('show');
+    }
+
+    function hideLoading() {
+        const loading = document.getElementById('loading');
+        if (loading) loading.classList.remove('show');
+    }
+    
+    function initMap() {
+        showLoading();
+        
+        const map = L.map('map', {
+            center: CONFIG.center,
+            zoom: CONFIG.zoom,
+            minZoom: CONFIG.minZoom,
+            maxZoom: CONFIG.maxZoom,
+            zoomControl: false
+        });
+        
+        L.control.zoom({
+            position: 'topright'
+        }).addTo(map);
+        
+        // Base maps
+        const osmLayer = L.tileLayer(CONFIG.baseMaps.osm.url, {
+            attribution: CONFIG.baseMaps.osm.attribution,
+            errorTileUrl: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjU2IiBoZWlnaHQ9IjI1NiIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMjU2IiBoZWlnaHQ9IjI1NiIgZmlsbD0iI2VlZSIvPjx0ZXh0IHg9IjUwJSIgeT0iNTAlIiBkb21pbmFudC1iYXNlbGluZT0ibWlkZGxlIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmb250LWZhbWlseT0ibW9ub3NwYWNlIiBmb250LXNpemU9IjE0cHgiIGZpbGw9IiM5OTkiPk5vIEltYWdlPC90ZXh0Pjwvc3ZnPg=='
+        }).addTo(map);
+        
+        const satelliteLayer = L.tileLayer(CONFIG.baseMaps.satellite.url, {
+            attribution: CONFIG.baseMaps.satellite.attribution,
+            maxZoom: 19
+        });
+        
+        // Overlay layer groups
+        const layers = {
+            batasKecamatan: L.layerGroup().addTo(map),
+            sdn: L.layerGroup().addTo(map),
+            smp: L.layerGroup().addTo(map),
+            sma: L.layerGroup().addTo(map),
+            universitas: L.layerGroup().addTo(map),
+            lainnya: L.layerGroup().addTo(map)
+        };
+        
+        loadGeoJSONData(map, layers);
+        
+        const baseMaps = {
+            'OpenStreetMap': osmLayer,
+            'Satelit': satelliteLayer
+        };
+        
+        const overlayMaps = {
+            'Batas Kecamatan': layers.batasKecamatan,
+            'SDN/SD/SDIT': layers.sdn,
+            'SMP/SMPN/SMPIT': layers.smp,
+            'SMA/SMAN/SMK': layers.sma,
+            'Universitas': layers.universitas,
+            'Lainnya (Madrasah, dll)': layers.lainnya
+        };
+        
+        L.control.layers(baseMaps, overlayMaps, {
+            position: 'topleft',
+            collapsed: false
+        }).addTo(map);
+        
+        L.control.scale({
+            position: 'bottomleft',
+            metric: true,
+            imperial: false
+        }).addTo(map);
+        
+        hideLoading();
+        return map;
+    }
+    
+    function loadGeoJSONData(map, layers) {
+        // Load map.geojson (SDN dan Batas Kecamatan)
+        Promise.all([
+            fetch('map.geojson').then(response => {
+                if (!response.ok) {
+                    throw new Error(`HTTP error loading map.geojson! status: ${response.status}`);
+                }
+                return response.json();
+            }),
+            fetch('sd-smp-sma.geojson').then(response => {
+                if (!response.ok) {
+                    throw new Error(`HTTP error loading sd-smp-sma.geojson! status: ${response.status}`);
+                }
+                return response.json();
+            })
+        ])
+        .then(([mapData, schoolData]) => {
+            processGeoJSONData(mapData, layers, 'map');
+            processGeoJSONData(schoolData, layers, 'school');
+        })
+        .catch(error => {
+            console.error('Error loading GeoJSON:', error);
+            showError('Gagal memuat data peta. Silakan refresh halaman.');
+        });
+    }
+    
+    function processGeoJSONData(data, layers, dataSource) {
+        L.geoJSON(data, {
+            style: getFeatureStyle,
+            pointToLayer: function(feature, latlng) {
+                return createMarker(feature, latlng, dataSource);
+            },
+            onEachFeature: function(feature, layer) {
+                bindFeaturePopup(feature, layer, layers, dataSource);
+            }
+        });
+    }
+    
+    function getFeatureStyle(feature) {
+        const styles = {
+            BatasKecamatan: {
+                color: '#ff7800',
+                weight: 4,
+                opacity: 0.8,
+                fillOpacity: 0.1
+            },
+            SDN: {
+                color: '#0066cc',
+                weight: 3,
+                opacity: 0.9,
+                fillOpacity: 0.2
+            }
+        };
+        
+        if (feature.properties.BatasKecamatan) {
+            return styles.BatasKecamatan;
+        } else if (feature.properties.SDN) {
+            return styles.SDN;
+        }
+        
+        return {
+            color: '#666',
+            weight: 2,
+            opacity: 0.7
+        };
+    }
+    
+    function createMarker(feature, latlng, dataSource) {
+        const props = feature.properties;
+        let iconColor = '#3388ff';
+        let iconSymbol = '●';
+        
+        // Tentukan warna dan simbol berdasarkan jenis sekolah
+        if (props.SDN || (props['SDN '] && props['SDN '].trim() !== '')) {
+            iconColor = '#0066cc';
+            iconSymbol = '🏫';
+        } else if (props.SMPN || props.SMP || (props['SMP '] && props['SMP '].trim() !== '')) {
+            iconColor = '#28a745';
+            iconSymbol = '🏫';
+        } else if (props.SMAN || props.SMK || (props['SMAN '] && props['SMAN '].trim() !== '')) {
+            iconColor = '#dc3545';
+            iconSymbol = '🏫';
+        } else if (props.Universitas || (props['Universitas '] && props['Universitas '].trim() !== '')) {
+            iconColor = '#6f42c1';
+            iconSymbol = '🎓';
+        } else if (props.SDIT || props.Madrasah) {
+            iconColor = '#0066cc';
+            iconSymbol = '🏫';
+        }
+        
+        // Custom marker untuk semua point data (baik dari school maupun map)
+        const markerIcon = L.divIcon({
+            className: 'custom-marker',
+            html: `<div style="
+                background-color: ${iconColor};
+                width: 28px;
+                height: 28px;
+                border-radius: 50%;
+                border: 3px solid white;
+                box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 14px;
+                color: white;
+                font-weight: bold;
+            ">${iconSymbol}</div>`,
+            iconSize: [28, 28],
+            iconAnchor: [14, 14],
+            popupAnchor: [0, -14]
+        });
+        
+        return L.marker(latlng, { icon: markerIcon });
+    }
+    
+    function bindFeaturePopup(feature, layer, layers, dataSource) {
+        const props = feature.properties;
+        let popupContent = '';
+        let targetLayer = null;
+        
+        // Handle data dari map.geojson
+        if (dataSource === 'map') {
+            if (props.BatasKecamatan) {
+                popupContent = `
+                    <div style="padding: 5px;">
+                        <strong style="color: #ff7800; font-size: 14px;">📍 Batas Kecamatan</strong><br>
+                        <span style="font-size: 13px;">${props.BatasKecamatan}</span>
+                    </div>
+                `;
+                targetLayer = layers.batasKecamatan;
+            } else if (props.SDN || (props['SDN '] && props['SDN '].trim() !== '')) {
+                const namaSDN = props.SDN || props['SDN '];
+                popupContent = `
+                    <div style="padding: 5px;">
+                        <strong style="color: #0066cc; font-size: 14px;">🏫 Sekolah Dasar Negeri</strong><br>
+                        <span style="font-size: 13px;">${namaSDN}</span>
+                    </div>
+                `;
+                targetLayer = layers.sdn;
+            }
+        }
+        
+        // Handle data dari sd-smp-sma.geojson
+        if (dataSource === 'school') {
+            // SDN/SD/SDIT
+            if (props.SDN || (props['SDN '] && props['SDN '].trim() !== '')) {
+                const namaSekolah = props.SDN || props['SDN '];
+                popupContent = `
+                    <div style="padding: 5px;">
+                        <strong style="color: #0066cc; font-size: 14px;">🏫 Sekolah Dasar</strong><br>
+                        <span style="font-size: 13px;">${namaSekolah}</span>
+                    </div>
+                `;
+                targetLayer = layers.sdn;
+            } else if (props.SDIT) {
+                popupContent = `
+                    <div style="padding: 5px;">
+                        <strong style="color: #0066cc; font-size: 14px;">🏫 SDIT</strong><br>
+                        <span style="font-size: 13px;">${props.SDIT}</span>
+                    </div>
+                `;
+                targetLayer = layers.sdn;
+            }
+            // SMP/SMPN/SMPIT
+            else if (props.SMPN || props.SMP || (props['SMP '] && props['SMP '].trim() !== '')) {
+                const namaSekolah = props.SMPN || props.SMP || props['SMP '];
+                popupContent = `
+                    <div style="padding: 5px;">
+                        <strong style="color: #28a745; font-size: 14px;">🏫 Sekolah Menengah Pertama</strong><br>
+                        <span style="font-size: 13px;">${namaSekolah}</span>
+                    </div>
+                `;
+                targetLayer = layers.smp;
+            }
+            // SMA/SMAN/SMK
+            else if (props.SMAN || props.SMK || (props['SMAN '] && props['SMAN '].trim() !== '')) {
+                const namaSekolah = props.SMAN || props.SMK || props['SMAN '];
+                const jenis = props.SMAN || props['SMAN '] ? 'SMA' : 'SMK';
+                popupContent = `
+                    <div style="padding: 5px;">
+                        <strong style="color: #dc3545; font-size: 14px;">🏫 ${jenis}</strong><br>
+                        <span style="font-size: 13px;">${namaSekolah}</span>
+                    </div>
+                `;
+                targetLayer = layers.sma;
+            }
+            // Universitas
+            else if (props.Universitas || (props['Universitas '] && props['Universitas '].trim() !== '')) {
+                const namaUniv = props.Universitas || props['Universitas '];
+                popupContent = `
+                    <div style="padding: 5px;">
+                        <strong style="color: #6f42c1; font-size: 14px;">🎓 Universitas</strong><br>
+                        <span style="font-size: 13px;">${namaUniv}</span>
+                    </div>
+                `;
+                targetLayer = layers.universitas;
+            }
+            // Madrasah dan lainnya
+            else if (props.Madrasah) {
+                popupContent = `
+                    <div style="padding: 5px;">
+                        <strong style="color: #fd7e14; font-size: 14px;">🕌 Madrasah</strong><br>
+                        <span style="font-size: 13px;">${props.Madrasah}</span>
+                    </div>
+                `;
+                targetLayer = layers.lainnya;
+            }
+        }
+        
+        if (popupContent && targetLayer) {
+            layer.bindPopup(popupContent, {
+                maxWidth: 300,
+                className: 'custom-popup'
+            });
+            targetLayer.addLayer(layer);
+        }
+    }
+    
+    function showError(message) {
+        const errorDiv = document.createElement('div');
+        errorDiv.className = 'error-message';
+        errorDiv.innerHTML = `<strong>Error:</strong> ${message}`;
+        errorDiv.style.cssText = `
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: #ff4444;
+            color: white;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+            z-index: 10000;
+            max-width: 300px;
+        `;
+        
+        document.body.appendChild(errorDiv);
+        
+        setTimeout(() => {
+            if (errorDiv.parentNode) {
+                errorDiv.parentNode.removeChild(errorDiv);
+            }
+        }, 5000);
+    }
+    
+    document.addEventListener('DOMContentLoaded', function() {
+        try {
+            initMap();
+        } catch (error) {
+            console.error('Map initialization failed:', error);
+            showError('Gagal menginisialisasi peta.');
+        }
+    });
+    
+})();

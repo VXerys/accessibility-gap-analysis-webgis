@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Peta GIS Kecamatan Gunung Puyuh - Sukabumi</title>
+    <meta name="description" content="Peta interaktif sistem informasi geografis lokasi pendidikan di Kecamatan Gunung Puyuh, Sukabumi">
+    <meta name="keywords" content="peta, GIS, Gunung Puyuh, Sukabumi, sekolah, pendidikan">
+    <meta name="author" content="Kecamatan Gunung Puyuh">
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E🗺️%3C/text%3E%3C/svg%3E">
+    
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" 
+          integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" 
+          crossorigin="" />
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <!-- Header Section -->
+    <header class="header">
+        <div class="header-container">
+            <div class="header-brand">
+                <div class="header-icon">🗺️</div>
+                <div class="header-text">
+                    <h1 class="header-title">WebGIS Aksesibilitas Fasilitas Pendidikan</h1>
+                    <p class="header-subtitle">Kecamatan Gunung Puyuh - Sukabumi, Jawa Barat</p>
+                    <div class="header-tags">
+                        <span class="tag tag-primary">📊 Analisis Spasial</span>
+                        <span class="tag tag-secondary">🎯 Urban Sprawl</span>
+                        <span class="tag tag-accent">📍 Gap Analysis</span>
+                    </div>
+                </div>
+            </div>
+            <div class="header-stats">
+                <div class="stat-card stat-primary">
+                    <span class="stat-icon">🏫</span>
+                    <div class="stat-info">
+                        <span class="stat-number" id="total-schools">0</span>
+                        <span class="stat-label">Total Institusi</span>
+                    </div>
+                </div>
+                <div class="stat-card stat-success">
+                    <span class="stat-icon">📍</span>
+                    <div class="stat-info">
+                        <span class="stat-number" id="total-locations">1</span>
+                        <span class="stat-label">Area Coverage</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+    
+    <!-- Main Content -->
+    <main class="main-content">
+        <!-- Map Container -->
+        <div class="map-wrapper">
+            <div id="map" role="application" aria-label="Peta interaktif lokasi pendidikan"></div>
+            
+            <!-- Loading Overlay -->
+            <div id="loading" class="loading-overlay">
+                <div class="loading-spinner"></div>
+                <p class="loading-text">Memuat data peta...</p>
+            </div>
+            
+            <!-- Enhanced Info Panel -->
+            <div class="info-panel" id="info-panel">
+                <button class="info-toggle" id="info-toggle" aria-label="Toggle Info Panel">
+                    <span class="toggle-icon">📊</span>
+                </button>
+                <div class="info-content" id="info-content">
+                    <!-- Research Context -->
+                    <div class="info-section">
+                        <h3 class="info-title">
+                            <span class="title-icon">�</span>
+                            Konteks Penelitian
+                        </h3>
+                        <div class="research-badge">
+                            <div class="badge-item">
+                                <span class="badge-icon">🎯</span>
+                                <span class="badge-text">Analisis Gap Aksesibilitas</span>
+                            </div>
+                            <div class="badge-item">
+                                <span class="badge-icon">📏</span>
+                                <span class="badge-text">Service Area Analysis</span>
+                            </div>
+                            <div class="badge-item">
+                                <span class="badge-icon">🏙️</span>
+                                <span class="badge-text">Urban Sprawl Impact</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Statistics -->
+                    <div class="info-section">
+                        <h3 class="info-title">
+                            <span class="title-icon">📊</span>
+                            Distribusi Fasilitas
+                        </h3>
+                        <div class="info-stats">
+                            <div class="info-stat-item">
+                                <span class="info-stat-icon" style="background: linear-gradient(135deg, #0066cc, #004499);">🏫</span>
+                                <div class="info-stat-details">
+                                    <span class="info-stat-number" id="stat-sd">0</span>
+                                    <span class="info-stat-label">SD/SDN/SDIT</span>
+                                    <div class="stat-progress">
+                                        <div class="stat-bar" id="bar-sd" style="background: #0066cc;"></div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="info-stat-item">
+                                <span class="info-stat-icon" style="background: linear-gradient(135deg, #28a745, #1e7e34);">🏫</span>
+                                <div class="info-stat-details">
+                                    <span class="info-stat-number" id="stat-smp">0</span>
+                                    <span class="info-stat-label">SMP/SMPN/SMPIT</span>
+                                    <div class="stat-progress">
+                                        <div class="stat-bar" id="bar-smp" style="background: #28a745;"></div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="info-stat-item">
+                                <span class="info-stat-icon" style="background: linear-gradient(135deg, #dc3545, #bd2130);">🏫</span>
+                                <div class="info-stat-details">
+                                    <span class="info-stat-number" id="stat-sma">0</span>
+                                    <span class="info-stat-label">SMA/SMAN/SMK</span>
+                                    <div class="stat-progress">
+                                        <div class="stat-bar" id="bar-sma" style="background: #dc3545;"></div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="info-stat-item">
+                                <span class="info-stat-icon" style="background: linear-gradient(135deg, #6f42c1, #5a32a3);">🎓</span>
+                                <div class="info-stat-details">
+                                    <span class="info-stat-number" id="stat-univ">0</span>
+                                    <span class="info-stat-label">Universitas</span>
+                                    <div class="stat-progress">
+                                        <div class="stat-bar" id="bar-univ" style="background: #6f42c1;"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Key Findings -->
+                    <div class="info-section">
+                        <h3 class="info-title">
+                            <span class="title-icon">�</span>
+                            Key Findings
+                        </h3>
+                        <div class="findings-list">
+                            <div class="finding-item">
+                                <span class="finding-icon success">✓</span>
+                                <span class="finding-text">Distribusi spasial telah dipetakan</span>
+                            </div>
+                            <div class="finding-item">
+                                <span class="finding-icon info">ℹ</span>
+                                <span class="finding-text">Analisis aksesibilitas ongoing</span>
+                            </div>
+                            <div class="finding-item">
+                                <span class="finding-icon warning">⚠</span>
+                                <span class="finding-text">Gap area identification diperlukan</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Interactive Guide -->
+                    <div class="info-section">
+                        <h3 class="info-title">
+                            <span class="title-icon">🎮</span>
+                            Panduan Interaktif
+                        </h3>
+                        <div class="guide-grid">
+                            <div class="guide-card">
+                                <div class="guide-icon">🖱️</div>
+                                <div class="guide-text">
+                                    <strong>Navigasi</strong>
+                                    <p>Klik marker untuk detail lokasi</p>
+                                </div>
+                            </div>
+                            <div class="guide-card">
+                                <div class="guide-icon">🔍</div>
+                                <div class="guide-text">
+                                    <strong>Zoom</strong>
+                                    <p>Scroll atau pinch untuk zoom</p>
+                                </div>
+                            </div>
+                            <div class="guide-card">
+                                <div class="guide-icon">🎨</div>
+                                <div class="guide-text">
+                                    <strong>Layer</strong>
+                                    <p>Toggle base map & overlays</p>
+                                </div>
+                            </div>
+                            <div class="guide-card">
+                                <div class="guide-icon">📍</div>
+                                <div class="guide-text">
+                                    <strong>Filter</strong>
+                                    <p>Pilih kategori di kontrol layer</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Methodology Info -->
+                    <div class="info-section">
+                        <h3 class="info-title">
+                            <span class="title-icon">🔬</span>
+                            Metodologi
+                        </h3>
+                        <div class="methodology-tags">
+                            <span class="method-tag">Point Pattern Analysis</span>
+                            <span class="method-tag">Isochrone Mapping</span>
+                            <span class="method-tag">Gap Analysis</span>
+                            <span class="method-tag">GeoJSON Processing</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+    
+    <!-- Enhanced Footer -->
+    <footer class="footer">
+        <div class="footer-content">
+            <div class="footer-grid">
+                <div class="footer-section">
+                    <h4 class="footer-heading">📍 Lokasi</h4>
+                    <p class="footer-text">Kecamatan Gunung Puyuh</p>
+                    <p class="footer-text">Kota Sukabumi, Jawa Barat</p>
+                </div>
+                <div class="footer-section">
+                    <h4 class="footer-heading">🎯 Tujuan Penelitian</h4>
+                    <p class="footer-text">Analisis aksesibilitas fasilitas pendidikan untuk mendukung perencanaan wilayah berbasis data spasial</p>
+                </div>
+                <div class="footer-section">
+                    <h4 class="footer-heading">🗺️ Data Sources</h4>
+                    <p class="footer-text">© OpenStreetMap contributors</p>
+                    <p class="footer-text">© Esri World Imagery</p>
+                    <p class="footer-text">Survey Lapangan 2025</p>
+                </div>
+                <div class="footer-section">
+                    <h4 class="footer-heading">📊 Teknologi</h4>
+                    <div class="tech-badges">
+                        <span class="tech-badge">Leaflet.js</span>
+                        <span class="tech-badge">GeoJSON</span>
+                        <span class="tech-badge">WebGIS</span>
+                        <span class="tech-badge">JavaScript</span>
+                    </div>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p class="footer-copyright">
+                    © 2025 WebGIS Project - Kecamatan Gunung Puyuh | 
+                    <span class="footer-badge">🔬 Research Project</span> | 
+                    <span class="footer-badge">📚 Educational Purpose</span>
+                </p>
+            </div>
+        </div>
+    </footer>
+    
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" 
+            integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" 
+            crossorigin=""></script>
+    
+    <!-- Application JavaScript Modules -->
+    <script src="js/config.js"></script>
+    <script src="js/ui-utils.js"></script>
+    <script src="js/marker-utils.js"></script>
+    <script src="js/popup-utils.js"></script>
+    <script src="js/geojson-loader.js"></script>
+    <script src="js/map-initializer.js"></script>
+    <script src="js/app.js"></script>
+</body>
+</html>
