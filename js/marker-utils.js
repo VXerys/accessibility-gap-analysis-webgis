@@ -72,7 +72,29 @@ const MarkerUtils = {
             popupAnchor: [0, -14]
         });
         
-        return L.marker(latlng, { icon: markerIcon });
+        const marker = L.marker(latlng, { icon: markerIcon });
+
+        // === Tambahan gambar popup START ===
+        // Generate popup content
+        const { popupContent, category } = PopupUtils.generatePopupContent(props, dataSource);
+
+        // Cek apakah ada gambar (dari properti Foto atau ImageURL)
+        let fullPopupContent = popupContent;
+        if (props.Foto || props.ImageURL || props.image) {
+            const imgUrl = props.Foto || props.ImageURL || props.image;
+            fullPopupContent += `
+                <div style="margin-top: 6px; text-align: center;">
+                    <img src="${imgUrl}" alt="Foto Sekolah" 
+                         style="width:200px; border-radius:8px; box-shadow:0 2px 6px rgba(0,0,0,0.3);" />
+                </div>
+            `;
+        }
+
+        // Pasang popup ke marker
+        marker.bindPopup(fullPopupContent);
+        // === Tambahan gambar popup END ===
+
+        return marker;
     }
 };
 

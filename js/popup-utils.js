@@ -16,11 +16,11 @@ const PopupUtils = {
 
         if (dataSource === 'map') {
             if (props.BatasKecamatan) {
-                popupContent = this.createPopupHTML('📍 Batas Kecamatan', props.BatasKecamatan, '#ff7800');
+                popupContent = this.createPopupHTML('📍 Batas Kecamatan', props.BatasKecamatan, '#ff7800', props);
                 category = 'batasKecamatan';
             } else if (props.SDN || (props['SDN '] && props['SDN '].trim() !== '')) {
                 const nama = props.SDN || props['SDN '];
-                popupContent = this.createPopupHTML('🏫 Sekolah Dasar Negeri', nama, '#0066cc');
+                popupContent = this.createPopupHTML('🏫 Sekolah Dasar Negeri', nama, '#0066cc', props);
                 category = 'sdn';
             }
         }
@@ -28,26 +28,26 @@ const PopupUtils = {
         if (dataSource === 'school') {
             if (props.SDN || (props['SDN '] && props['SDN '].trim() !== '')) {
                 const nama = props.SDN || props['SDN '];
-                popupContent = this.createPopupHTML('🏫 Sekolah Dasar', nama, '#0066cc');
+                popupContent = this.createPopupHTML('🏫 Sekolah Dasar', nama, '#0066cc', props);
                 category = 'sdn';
             } else if (props.SDIT) {
-                popupContent = this.createPopupHTML('🏫 SDIT', props.SDIT, '#0066cc');
+                popupContent = this.createPopupHTML('🏫 SDIT', props.SDIT, '#0066cc', props);
                 category = 'sdn';
             } else if (props.SMPN || props.SMP || (props['SMP '] && props['SMP '].trim() !== '')) {
                 const nama = props.SMPN || props.SMP || props['SMP '];
-                popupContent = this.createPopupHTML('🏫 Sekolah Menengah Pertama', nama, '#28a745');
+                popupContent = this.createPopupHTML('🏫 Sekolah Menengah Pertama', nama, '#28a745', props);
                 category = 'smp';
             } else if (props.SMAN || props.SMK || (props['SMAN '] && props['SMAN '].trim() !== '')) {
                 const nama = props.SMAN || props.SMK || props['SMAN '];
                 const jenis = props.SMAN || props['SMAN '] ? 'SMA' : 'SMK';
-                popupContent = this.createPopupHTML(`🏫 ${jenis}`, nama, '#dc3545');
+                popupContent = this.createPopupHTML(`🏫 ${jenis}`, nama, '#dc3545', props);
                 category = 'sma';
             } else if (props.Universitas || (props['Universitas '] && props['Universitas '].trim() !== '')) {
                 const nama = props.Universitas || props['Universitas '];
-                popupContent = this.createPopupHTML('🎓 Universitas', nama, '#6f42c1');
+                popupContent = this.createPopupHTML('🎓 Universitas', nama, '#6f42c1', props);
                 category = 'universitas';
             } else if (props.Madrasah) {
-                popupContent = this.createPopupHTML('🕌 Madrasah', props.Madrasah, '#fd7e14');
+                popupContent = this.createPopupHTML('🕌 Madrasah', props.Madrasah, '#fd7e14', props);
                 category = 'lainnya';
             }
         }
@@ -60,18 +60,38 @@ const PopupUtils = {
      * @param {string} title - Popup title
      * @param {string} content - Popup content
      * @param {string} color - Title color
+     * @param {Object} [props] - Feature properties (optional)
      * @returns {string} HTML string for popup
      */
-    createPopupHTML(title, content, color) {
+    createPopupHTML(title, content, color, props = {}) {
+        // Penyesuaian
+        let imgHTML = '';
+
+        if (props.Foto) {
+            // Penyesuaian URL gambar
+            const baseURL = `${window.location.origin}/img/`;
+            const imgPath = props.Foto.startsWith('http')
+                ? props.Foto
+                : `${baseURL}${props.Foto.replace(/^img[\\/]/, '')}`;
+
+            imgHTML = `
+                <div style="margin-top: 6px; text-align:center;">
+                    <img src="${imgPath}" 
+                         alt="Foto Sekolah" 
+                         style="width:200px;border-radius:8px;box-shadow:0 2px 6px rgba(0,0,0,0.3);" />
+                </div>
+            `;
+        }
+        // Penyelesaian
         return `
             <div style="padding: 5px;">
                 <strong style="color: ${color}; font-size: 14px;">${title}</strong><br>
                 <span style="font-size: 13px;">${content}</span>
+                ${imgHTML}
             </div>
         `;
     }
 };
-
 // Export for use in other modules
 if (typeof module !== 'undefined' && module.exports) {
     module.exports = PopupUtils;
