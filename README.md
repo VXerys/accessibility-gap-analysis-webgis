@@ -11,6 +11,7 @@
 ## 📋 Daftar Isi
 
 - [Tentang Proyek](#-tentang-proyek)
+- [Tim Pengembang](#-tim-pengembang)
 - [Case Problem](#-case-problem)
 - [Fitur Utama](#-fitur-utama)
 - [Teknologi](#-teknologi)
@@ -37,6 +38,18 @@ Kecamatan Gunung Puyuh mengalami **transformasi urban yang sangat cepat** dalam 
 3. **Pertumbuhan penduduk tinggi** dari urbanisasi dan migrasi
 
 Dampak yang terjadi menciptakan **kesenjangan aksesibilitas** terhadap fasilitas pendidikan dan kesehatan, terutama di kelurahan-kelurahan pinggiran yang baru berkembang.
+
+### 👥 Tim Pengembang
+
+| Nama | NIM | Role | GitHub |
+|------|-----|------|--------|
+| **M. Sechan Alfarisi** | 20230040094 | 🔧 Lead Developer & Repository Owner | [@VXerys](https://github.com/VXerys) |
+| M. Akbar Rizky Saputra | 20230040236 | 👨‍💻 Developer | - |
+| M. Fathir Bagas | 20230040126 | 👨‍💻 Developer | - |
+| M. Sinar Agusta | 20230040188 | 👨‍💻 Developer | - |
+| M. Ghibran Muslih | 20230040105 | 👨‍💻 Developer | - |
+
+> **Repository**: [github.com/VXerys/accessibility-gap-analysis-webgis](https://github.com/VXerys/accessibility-gap-analysis-webgis)
 
 ---
 
@@ -729,10 +742,21 @@ SOFTWARE.
 - **Location**: Sukabumi, Jawa Barat, Indonesia
 
 ### Links
-- 📧 **Email**: [contact@example.com](mailto:contact@example.com)
+- � **Repository**: [github.com/VXerys/accessibility-gap-analysis-webgis](https://github.com/VXerys/accessibility-gap-analysis-webgis)
 - 🌐 **Website**: [kecamatan-gunungpuyuh.go.id](https://kecamatangunungpuyuh.sukabumikota.go.id)
-- 📚 **Documentation**: [GitHub Wiki](https://github.com/username/repo/wiki)
-- 🐛 **Issues**: [GitHub Issues](https://github.com/username/repo/issues)
+- 📚 **Documentation**: [GitHub Wiki](https://github.com/VXerys/accessibility-gap-analysis-webgis/wiki)
+- 🐛 **Issues**: [GitHub Issues](https://github.com/VXerys/accessibility-gap-analysis-webgis/issues)
+
+### Tim Pengembang
+
+**Lead Developer:**
+- M. Sechan Alfarisi ([@VXerys](https://github.com/VXerys)) - NIM: 20230040094
+
+**Development Team:**
+- M. Akbar Rizky Saputra - NIM: 20230040236
+- M. Fathir Bagas - NIM: 20230040126
+- M. Sinar Agusta - NIM: 20230040188
+- M. Ghibran Muslih - NIM: 20230040105
 
 ### Acknowledgments
 
@@ -771,8 +795,10 @@ Terima kasih kepada:
 
 **Made with ❤️ for Kecamatan Gunung Puyuh, Sukabumi**
 
-[![GitHub stars](https://img.shields.io/github/stars/username/repo.svg?style=social&label=Star)](https://github.com/username/repo)
-[![GitHub forks](https://img.shields.io/github/forks/username/repo.svg?style=social&label=Fork)](https://github.com/username/repo/fork)
+**Developed by:** M. Sechan Alfarisi & Team
+
+[![GitHub stars](https://img.shields.io/github/stars/VXerys/accessibility-gap-analysis-webgis.svg?style=social&label=Star)](https://github.com/VXerys/accessibility-gap-analysis-webgis)
+[![GitHub forks](https://img.shields.io/github/forks/VXerys/accessibility-gap-analysis-webgis.svg?style=social&label=Fork)](https://github.com/VXerys/accessibility-gap-analysis-webgis/fork)
 
 ---
 
