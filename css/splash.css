@@ -1,0 +1,128 @@
+/**
+ * Splash Screen Styles
+ * Loading screen with animations
+ */
+
+.splash-screen {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+    transition: opacity 0.5s ease, visibility 0.5s ease;
+}
+
+.splash-screen.hidden {
+    opacity: 0;
+    visibility: hidden;
+}
+
+.splash-content {
+    text-align: center;
+    color: white;
+    animation: splashFadeIn 0.8s ease-out;
+}
+
+@keyframes splashFadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.splash-icon {
+    font-size: 6rem;
+    margin-bottom: 1.5rem;
+    animation: splashBounce 1.5s ease-in-out infinite;
+}
+
+@keyframes splashBounce {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-20px); }
+}
+
+.splash-title {
+    font-size: 3rem;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+    text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.2);
+    letter-spacing: -1px;
+}
+
+.splash-subtitle {
+    font-size: 1.25rem;
+    font-weight: 300;
+    margin-bottom: 2rem;
+    opacity: 0.9;
+}
+
+.splash-loader {
+    width: 250px;
+    height: 4px;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 10px;
+    margin: 0 auto 1rem;
+    overflow: hidden;
+}
+
+.loader-bar {
+    height: 100%;
+    background: linear-gradient(90deg, #fff, rgba(255, 255, 255, 0.8), #fff);
+    border-radius: 10px;
+    animation: loaderProgress 2s ease-in-out infinite;
+}
+
+@keyframes loaderProgress {
+    0% {
+        width: 0%;
+        margin-left: 0;
+    }
+    50% {
+        width: 80%;
+        margin-left: 10%;
+    }
+    100% {
+        width: 0%;
+        margin-left: 100%;
+    }
+}
+
+.splash-text {
+    font-size: 0.875rem;
+    opacity: 0.8;
+    animation: splashPulse 1.5s ease-in-out infinite;
+}
+
+@keyframes splashPulse {
+    0%, 100% { opacity: 0.5; }
+    50% { opacity: 1; }
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .splash-icon {
+        font-size: 4rem;
+    }
+    
+    .splash-title {
+        font-size: 2rem;
+    }
+    
+    .splash-subtitle {
+        font-size: 1rem;
+        padding: 0 1rem;
+    }
+    
+    .splash-loader {
+        width: 200px;
+    }
+}
