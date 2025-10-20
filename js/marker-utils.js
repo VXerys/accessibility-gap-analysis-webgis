@@ -5,7 +5,7 @@
 
 const MarkerUtils = {
     /**
-     * Icon configuration based on school type
+     * Icon configuration based on school type and health facilities
      */
     iconConfig: {
         sdn: { color: '#0066cc', symbol: '🏫' },
@@ -13,15 +13,64 @@ const MarkerUtils = {
         sma: { color: '#dc3545', symbol: '🏫' },
         universitas: { color: '#6f42c1', symbol: '🎓' },
         lainnya: { color: '#0066cc', symbol: '🏫' },
+        rumahSakit: { color: '#e74c3c', symbol: '🏥' },
+        puskesmas: { color: '#3498db', symbol: '⚕️' },
+        klinik: { color: '#2ecc71', symbol: '🩺' },
+        posyandu: { color: '#f39c12', symbol: '👶' },
         default: { color: '#3388ff', symbol: '●' }
     },
 
     /**
      * Determine icon configuration based on feature properties
      * @param {Object} props - Feature properties
+     * @param {string} dataSource - Source of data ('map', 'school', or 'health')
      * @returns {Object} Icon configuration with color and symbol
      */
-    getIconConfig(props) {
+    getIconConfig(props, dataSource) {
+        // Health facilities detection
+        if (dataSource === 'health') {
+            // Check for Rumah Sakit
+            for (let key in props) {
+                const value = props[key];
+                if (key.toLowerCase().includes('rs ') || 
+                    key.toLowerCase().includes('rumah sakit') ||
+                    (typeof value === 'string' && value.toLowerCase().includes('rs '))) {
+                    return this.iconConfig.rumahSakit;
+                }
+            }
+            
+            // Check for Puskesmas
+            for (let key in props) {
+                const value = props[key];
+                if (key.toLowerCase().includes('puskesmas') ||
+                    (typeof value === 'string' && value.toLowerCase().includes('puskesmas'))) {
+                    return this.iconConfig.puskesmas;
+                }
+            }
+            
+            // Check for Posyandu
+            for (let key in props) {
+                const value = props[key];
+                if (key.toLowerCase().includes('posyandu') ||
+                    (typeof value === 'string' && value.toLowerCase().includes('posyandu'))) {
+                    return this.iconConfig.posyandu;
+                }
+            }
+            
+            // Check for Klinik (default for health if not matched)
+            for (let key in props) {
+                const value = props[key];
+                if (key.toLowerCase().includes('klinik') ||
+                    (typeof value === 'string' && value.toLowerCase().includes('klinik'))) {
+                    return this.iconConfig.klinik;
+                }
+            }
+            
+            // Default to klinik for health data
+            return this.iconConfig.klinik;
+        }
+        
+        // School facilities detection (existing logic)
         if (props.SDN || (props['SDN '] && props['SDN '].trim() !== '')) {
             return this.iconConfig.sdn;
         }
@@ -44,12 +93,12 @@ const MarkerUtils = {
      * Create custom marker for map points
      * @param {Object} feature - GeoJSON feature
      * @param {L.LatLng} latlng - Marker coordinates
-     * @param {string} dataSource - Source of data ('map' or 'school')
+     * @param {string} dataSource - Source of data ('map', 'school', or 'health')
      * @returns {L.Marker} Leaflet marker instance
      */
     createMarker(feature, latlng, dataSource) {
         const props = feature.properties;
-        const config = this.getIconConfig(props);
+        const config = this.getIconConfig(props, dataSource);
         
         const markerIcon = L.divIcon({
             className: 'custom-marker',

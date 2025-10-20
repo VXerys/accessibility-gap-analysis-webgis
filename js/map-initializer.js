@@ -89,7 +89,11 @@ const MapInitializer = {
             smp: L.layerGroup().addTo(map),
             sma: L.layerGroup().addTo(map),
             universitas: L.layerGroup().addTo(map),
-            lainnya: L.layerGroup().addTo(map)
+            lainnya: L.layerGroup().addTo(map),
+            rumahSakit: L.layerGroup().addTo(map),
+            puskesmas: L.layerGroup().addTo(map),
+            klinik: L.layerGroup().addTo(map),
+            posyandu: L.layerGroup().addTo(map)
         };
 
         const maps = {};

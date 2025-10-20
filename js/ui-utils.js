@@ -12,7 +12,12 @@ const UIUtils = {
         smp: 0,
         sma: 0,
         universitas: 0,
-        total: 0
+        rumahSakit: 0,
+        puskesmas: 0,
+        klinik: 0,
+        posyandu: 0,
+        total: 0,
+        totalHealth: 0
     },
 
     /**
@@ -75,11 +80,16 @@ const UIUtils = {
 
     /**
      * Update statistics counter
-     * @param {string} category - Category name (sd, smp, sma, universitas)
+     * @param {string} category - Category name (sd, smp, sma, universitas, rumahSakit, puskesmas, klinik, posyandu)
      */
     incrementStat(category) {
         if (this.stats.hasOwnProperty(category)) {
             this.stats[category]++;
+            
+            // Update total health facilities counter
+            if (['rumahSakit', 'puskesmas', 'klinik', 'posyandu'].includes(category)) {
+                this.stats.totalHealth++;
+            }
         }
         this.stats.total++;
     },
@@ -93,7 +103,12 @@ const UIUtils = {
             'stat-smp': this.stats.smp,
             'stat-sma': this.stats.sma,
             'stat-univ': this.stats.universitas,
-            'total-schools': this.stats.total,
+            'stat-rs': this.stats.rumahSakit,
+            'stat-puskesmas': this.stats.puskesmas,
+            'stat-klinik': this.stats.klinik,
+            'stat-posyandu': this.stats.posyandu,
+            'total-schools': this.stats.total - this.stats.totalHealth,
+            'total-health': this.stats.totalHealth,
             'total-locations': 1 // Kecamatan Gunung Puyuh
         };
 
@@ -114,20 +129,36 @@ const UIUtils = {
      * Update progress bars based on statistics
      */
     updateProgressBars() {
-        const total = this.stats.total || 1; // Avoid division by zero
+        const totalSchools = this.stats.sd + this.stats.smp + this.stats.sma + this.stats.universitas || 1;
+        const totalHealth = this.stats.totalHealth || 1;
         
-        const percentages = {
-            sd: (this.stats.sd / total) * 100,
-            smp: (this.stats.smp / total) * 100,
-            sma: (this.stats.sma / total) * 100,
-            univ: (this.stats.universitas / total) * 100
+        // School percentages
+        const schoolPercentages = {
+            sd: (this.stats.sd / totalSchools) * 100,
+            smp: (this.stats.smp / totalSchools) * 100,
+            sma: (this.stats.sma / totalSchools) * 100,
+            univ: (this.stats.universitas / totalSchools) * 100
         };
 
-        // Animate progress bars
-        this.setProgressBar('bar-sd', percentages.sd);
-        this.setProgressBar('bar-smp', percentages.smp);
-        this.setProgressBar('bar-sma', percentages.sma);
-        this.setProgressBar('bar-univ', percentages.univ);
+        // Health percentages
+        const healthPercentages = {
+            rs: (this.stats.rumahSakit / totalHealth) * 100,
+            puskesmas: (this.stats.puskesmas / totalHealth) * 100,
+            klinik: (this.stats.klinik / totalHealth) * 100,
+            posyandu: (this.stats.posyandu / totalHealth) * 100
+        };
+
+        // Animate school progress bars
+        this.setProgressBar('bar-sd', schoolPercentages.sd);
+        this.setProgressBar('bar-smp', schoolPercentages.smp);
+        this.setProgressBar('bar-sma', schoolPercentages.sma);
+        this.setProgressBar('bar-univ', schoolPercentages.univ);
+
+        // Animate health progress bars
+        this.setProgressBar('bar-rs', healthPercentages.rs);
+        this.setProgressBar('bar-puskesmas', healthPercentages.puskesmas);
+        this.setProgressBar('bar-klinik', healthPercentages.klinik);
+        this.setProgressBar('bar-posyandu', healthPercentages.posyandu);
     },
 
     /**

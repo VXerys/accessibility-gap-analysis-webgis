@@ -14,11 +14,13 @@ const GeoJSONLoader = {
 
         Promise.all([
             this.fetchGeoJSON(MapConfig.dataSources.mapGeojson),
-            this.fetchGeoJSON(MapConfig.dataSources.schoolGeojson)
+            this.fetchGeoJSON(MapConfig.dataSources.schoolGeojson),
+            this.fetchGeoJSON(MapConfig.dataSources.healthGeojson)
         ])
-        .then(([mapData, schoolData]) => {
+        .then(([mapData, schoolData, healthData]) => {
             this.processGeoJSONData(mapData, layers, 'map');
             this.processGeoJSONData(schoolData, layers, 'school');
+            this.processGeoJSONData(healthData, layers, 'health');
             UIUtils.hideLoading();
         })
         .catch(error => {
@@ -46,7 +48,7 @@ const GeoJSONLoader = {
      * Process GeoJSON data and add to map
      * @param {Object} data - GeoJSON data
      * @param {Object} layers - Layer groups object
-     * @param {string} dataSource - Source identifier ('map' or 'school')
+     * @param {string} dataSource - Source identifier ('map' or 'school' or 'health')
      */
     processGeoJSONData(data, layers, dataSource) {
         L.geoJSON(data, {
@@ -124,6 +126,14 @@ const GeoJSONLoader = {
                 UIUtils.incrementStat('sma');
             } else if (category === 'universitas') {
                 UIUtils.incrementStat('universitas');
+            } else if (category === 'rumahSakit') {
+                UIUtils.incrementStat('rumahSakit');
+            } else if (category === 'puskesmas') {
+                UIUtils.incrementStat('puskesmas');
+            } else if (category === 'klinik') {
+                UIUtils.incrementStat('klinik');
+            } else if (category === 'posyandu') {
+                UIUtils.incrementStat('posyandu');
             }
         }
     }

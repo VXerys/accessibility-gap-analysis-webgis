@@ -29,7 +29,8 @@ const MapConfig = {
     // GeoJSON data sources
     dataSources: {
         mapGeojson: 'map.geojson',
-        schoolGeojson: 'sd-smp-sma.geojson'
+        schoolGeojson: 'sd-smp-sma.geojson',
+        healthGeojson: 'RS_Puskesmas_Klinik.geojson'
     },
     
     // Layer names for UI
@@ -39,7 +40,11 @@ const MapConfig = {
         smp: 'SMP/SMPN/SMPIT',
         sma: 'SMA/SMAN/SMK',
         universitas: 'Universitas',
-        lainnya: 'Lainnya (Madrasah, dll)'
+        lainnya: 'Lainnya (Madrasah, dll)',
+        rumahSakit: 'Rumah Sakit',
+        puskesmas: 'Puskesmas',
+        klinik: 'Klinik',
+        posyandu: 'Posyandu'
     },
     
     // Control positions

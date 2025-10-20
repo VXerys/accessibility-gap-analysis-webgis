@@ -1,0 +1,113 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "RS Islam Assifa": "",
+        "Foto": "../img/rs/islam_assyifa.jpg"
+      },
+      "geometry": {
+        "coordinates": [
+          106.91688364511629,
+          -6.918981903103145
+        ],
+        "type": "Point"
+      },
+      "id": 0
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "RS Bhayangkara Setukpa": "",
+        "Foto": "../img/rs/bhayangkara_setukpa.jpg"
+      },
+      "geometry": {
+        "coordinates": [
+          106.92218688042118,
+          -6.912519281918492
+        ],
+        "type": "Point"
+      },
+      "id": 1
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Puskesmas Cipelang": "",
+        "Foto": "..img/puskesmas/puskes_cipelang.jpg"
+      },
+      "geometry": {
+        "coordinates": [
+          106.91463838281345,
+          -6.918548962021333
+        ],
+        "type": "Point"
+      },
+      "id": 2
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Klinik irma Pratama": "",
+        "Foto": "klinik-irma-pratama.jpg"
+      },
+      "geometry": {
+        "coordinates": [
+          106.91680281862403,
+          -6.917057722016239
+        ],
+        "type": "Point"
+      },
+      "id": 3
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Posyandu Kemala": "",
+        "marker-color": "#00f900",
+        "marker-size": "medium",
+        "marker-symbol": "circle",
+        "Foto": "posyandu-kemala.jpg"
+      },
+      "geometry": {
+        "coordinates": [
+          106.92204184566526,
+          -6.91231029102461
+        ],
+        "type": "Point"
+      },
+      "id": 4
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Klinik GEMA MEDICAL CENTER": "",
+        "Foto": "klinik-gema-medical-center.jpg"
+      },
+      "geometry": {
+        "coordinates": [
+          106.92122034148633,
+          -6.910959022050122
+        ],
+        "type": "Point"
+      },
+      "id": 5
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Klinik Ervix Medika": "",
+        "Foto": "../img/klinik/ervix_medika.jpg"
+      },
+      "geometry": {
+        "coordinates": [
+          106.920957132122,
+          -6.9113450618364425
+        ],
+        "type": "Point"
+      },
+      "id": 6
+    }
+  ]
+}
