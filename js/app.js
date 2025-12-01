@@ -32,7 +32,12 @@
             UIUtils.initInfoPanel();
             
             // Initialize map
-            MapInitializer.init();
+            const map = MapInitializer.init();
+            
+            // Initialize analysis module
+            if (typeof AnalysisUtils !== 'undefined') {
+                AnalysisUtils.init(map);
+            }
             
             // Update statistics display after a short delay
             // to allow data loading to complete

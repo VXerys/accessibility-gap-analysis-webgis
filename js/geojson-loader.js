@@ -4,6 +4,9 @@
  */
 
 const GeoJSONLoader = {
+    // Store all facilities for analysis
+    allFacilities: [],
+
     /**
      * Load and process GeoJSON data from multiple sources
      * @param {L.Map} map - Leaflet map instance
@@ -21,6 +24,12 @@ const GeoJSONLoader = {
             this.processGeoJSONData(mapData, layers, 'map');
             this.processGeoJSONData(schoolData, layers, 'school');
             this.processGeoJSONData(healthData, layers, 'health');
+            
+            // Store facilities for analysis
+            if (typeof AnalysisUtils !== 'undefined') {
+                AnalysisUtils.storeFacilities(this.allFacilities);
+            }
+            
             UIUtils.hideLoading();
         })
         .catch(error => {
@@ -54,6 +63,10 @@ const GeoJSONLoader = {
         L.geoJSON(data, {
             style: this.getFeatureStyle,
             pointToLayer: (feature, latlng) => {
+                // Store point features for analysis (skip boundaries)
+                if (feature.geometry.type === 'Point' && dataSource !== 'map') {
+                    this.allFacilities.push(feature);
+                }
                 return MarkerUtils.createMarker(feature, latlng, dataSource);
             },
             onEachFeature: (feature, layer) => {

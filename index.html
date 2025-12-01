@@ -30,6 +30,7 @@
     <link rel="stylesheet" href="css/components.css">
     <link rel="stylesheet" href="css/footer.css">
     <link rel="stylesheet" href="css/animations.css">
+    <link rel="stylesheet" href="css/analysis.css">
 </head>
 <body>
     <!-- Splash Screen -->
@@ -90,6 +91,53 @@
                 <div class="loading-spinner"></div>
                 <p class="loading-text">Memuat data peta...</p>
             </div>
+            
+            <!-- Analysis Control Panel -->
+            <div class="analysis-panel" id="analysis-panel">
+                <div class="analysis-header">
+                    <h3 class="analysis-title">
+                        <span class="analysis-icon">📊</span>
+                        Data Analisis
+                    </h3>
+                    <button class="analysis-close" id="analysis-close" aria-label="Tutup Panel Analisis">
+                        ✕
+                    </button>
+                </div>
+                <div class="analysis-content">
+                    <div class="analysis-modes">
+                        <button class="analysis-mode-btn" id="nearest-btn" data-mode="nearest">
+                            <span class="mode-icon">🎯</span>
+                            <span class="mode-text">Fasilitas Terdekat</span>
+                        </button>
+                        <button class="analysis-mode-btn" id="distance-btn" data-mode="distance">
+                            <span class="mode-icon">📏</span>
+                            <span class="mode-text">Ukur Jarak</span>
+                        </button>
+                        <button class="analysis-mode-btn" id="buffer-btn" data-mode="buffer">
+                            <span class="mode-icon">⭕</span>
+                            <span class="mode-text">Service Area</span>
+                        </button>
+                    </div>
+                    
+                    <div class="analysis-info" id="analysis-info">
+                        <p class="info-instruction">Pilih mode analisis di atas, lalu klik pada peta untuk memulai.</p>
+                    </div>
+                    
+                    <div class="analysis-results" id="analysis-results" style="display: none;">
+                        <div class="results-header">
+                            <h4 class="results-title">Hasil Analisis</h4>
+                            <button class="results-clear" id="clear-analysis">Bersihkan</button>
+                        </div>
+                        <div class="results-content" id="results-content"></div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Analysis Toggle Button -->
+            <button class="analysis-toggle" id="analysis-toggle" aria-label="Toggle Analysis Panel">
+                <span class="toggle-icon">📊</span>
+                <span class="toggle-text">Analisis</span>
+            </button>
             
             <!-- Enhanced Info Panel -->
             <div class="info-panel" id="info-panel">
@@ -290,6 +338,9 @@
             integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" 
             crossorigin=""></script>
     
+    <!-- Turf.js for Spatial Analysis -->
+    <script src="https://cdn.jsdelivr.net/npm/@turf/turf@6/turf.min.js"></script>
+    
     <!-- Application JavaScript Modules -->
     <script src="js/config.js"></script>
     <script src="js/ui-utils.js"></script>
@@ -297,6 +348,7 @@
     <script src="js/popup-utils.js"></script>
     <script src="js/geojson-loader.js"></script>
     <script src="js/map-initializer.js"></script>
+    <script src="js/analysis-utils.js"></script>
     <script src="js/app.js"></script>
 </body>
 </html>
