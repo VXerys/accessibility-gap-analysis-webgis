@@ -105,17 +105,33 @@
                 </div>
                 <div class="analysis-content">
                     <div class="analysis-modes">
-                        <button class="analysis-mode-btn" id="nearest-btn" data-mode="nearest">
+                        <button class="analysis-mode-btn" id="nearest-btn" data-mode="nearest" title="Cari 1 fasilitas terdekat">
                             <span class="mode-icon">🎯</span>
-                            <span class="mode-text">Fasilitas Terdekat</span>
+                            <span class="mode-text">Terdekat</span>
                         </button>
-                        <button class="analysis-mode-btn" id="distance-btn" data-mode="distance">
+                        <button class="analysis-mode-btn" id="topN-btn" data-mode="topN" title="Cari 5 fasilitas terdekat">
+                            <span class="mode-icon">🏆</span>
+                            <span class="mode-text">Top 5</span>
+                        </button>
+                        <button class="analysis-mode-btn" id="distance-btn" data-mode="distance" title="Ukur jarak antara 2 titik">
                             <span class="mode-icon">📏</span>
                             <span class="mode-text">Ukur Jarak</span>
                         </button>
-                        <button class="analysis-mode-btn" id="buffer-btn" data-mode="buffer">
+                        <button class="analysis-mode-btn" id="buffer-btn" data-mode="buffer" title="Area layanan 3 zona">
                             <span class="mode-icon">⭕</span>
                             <span class="mode-text">Service Area</span>
+                        </button>
+                        <button class="analysis-mode-btn" id="isochrone-btn" data-mode="isochrone" title="Analisis zona waktu tempuh">
+                            <span class="mode-icon">🕐</span>
+                            <span class="mode-text">Isochrone</span>
+                        </button>
+                        <button class="analysis-mode-btn" id="gap-btn" data-mode="gap" title="Analisis kesenjangan aksesibilitas">
+                            <span class="mode-icon">⚠️</span>
+                            <span class="mode-text">Gap Analysis</span>
+                        </button>
+                        <button class="analysis-mode-btn" id="compare-btn" data-mode="compare" title="Bandingkan aksesibilitas 2 lokasi">
+                            <span class="mode-icon">⚖️</span>
+                            <span class="mode-text">Compare</span>
                         </button>
                     </div>
                     

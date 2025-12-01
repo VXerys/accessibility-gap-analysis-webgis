@@ -420,3 +420,275 @@
 .analysis-content::-webkit-scrollbar-thumb:hover {
     background: linear-gradient(135deg, #7952cc, #6339b8);
 }
+
+/* ================================================
+   ENHANCED ANALYSIS FEATURES STYLES
+   ================================================ */
+
+/* Multi-Facility Results */
+.multi-facility-results {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.multi-facility-results .result-item {
+    background: white;
+    border-radius: 8px;
+    padding: 12px;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+    transition: all 0.3s ease;
+    border-left-width: 4px;
+    border-left-style: solid;
+}
+
+.multi-facility-results .result-item:hover {
+    transform: translateX(4px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+}
+
+.result-rank {
+    font-size: 20px;
+    font-weight: 800;
+    color: #6f42c1;
+    min-width: 35px;
+}
+
+/* Numbered Marker (on map) */
+.numbered-marker {
+    background: none !important;
+    border: none !important;
+}
+
+/* Isochrone Results */
+.isochrone-results {
+    background: white;
+    border-radius: 12px;
+    padding: 16px;
+}
+
+.isochrone-results h4 {
+    margin: 0 0 8px 0;
+    font-size: 16px;
+    font-weight: 700;
+    color: #2c3e50;
+}
+
+.zone-stat {
+    padding: 10px;
+    margin-bottom: 8px;
+    background: #f8f9fa;
+    border-radius: 6px;
+    transition: all 0.3s ease;
+}
+
+.zone-stat:hover {
+    background: #e9ecef;
+    transform: translateX(4px);
+}
+
+.accessibility-assessment {
+    animation: slideIn 0.5s ease;
+}
+
+.accessibility-assessment h5 {
+    font-size: 14px;
+    font-weight: 700;
+    color: #495057;
+}
+
+/* Gap Analysis Results */
+.gap-analysis-results {
+    background: white;
+    border-radius: 12px;
+    padding: 16px;
+}
+
+.gap-status {
+    text-align: center;
+    font-size: 18px;
+    font-weight: 800;
+    letter-spacing: 0.5px;
+    animation: fadeInScale 0.5s ease;
+}
+
+.gap-metrics,
+.facility-breakdown {
+    margin-top: 12px;
+}
+
+.metric-row,
+.type-row {
+    transition: all 0.3s ease;
+}
+
+.metric-row:hover,
+.type-row:hover {
+    background: #e9ecef !important;
+}
+
+.recommendations {
+    animation: slideIn 0.5s ease 0.2s both;
+}
+
+.recommendations h5 {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+/* Comparison Results */
+.comparison-results {
+    background: white;
+    border-radius: 12px;
+    padding: 16px;
+}
+
+.comparison-results h4 {
+    margin: 0 0 8px 0;
+    font-size: 16px;
+    font-weight: 700;
+    color: #2c3e50;
+}
+
+/* Enhanced Grid Layout for Buttons */
+@media (min-width: 769px) {
+    .analysis-modes {
+        grid-template-columns: repeat(4, 1fr);
+    }
+}
+
+@media (min-width: 1200px) {
+    .analysis-modes {
+        grid-template-columns: repeat(4, 1fr);
+    }
+}
+
+/* Animations */
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes fadeInScale {
+    from {
+        opacity: 0;
+        transform: scale(0.95);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+/* Enhanced Result Info Styling */
+.result-info p {
+    margin: 0;
+    line-height: 1.6;
+}
+
+/* Styled Lists in Results */
+.results-content ul {
+    margin: 8px 0;
+    padding-left: 20px;
+    list-style: none;
+}
+
+.results-content ul li {
+    margin-bottom: 6px;
+    padding-left: 20px;
+    position: relative;
+}
+
+.results-content ul li:before {
+    content: "▸";
+    position: absolute;
+    left: 0;
+    color: #6f42c1;
+    font-weight: bold;
+}
+
+/* Enhanced Mobile Responsiveness for New Features */
+@media (max-width: 768px) {
+    .multi-facility-results .result-item {
+        padding: 10px;
+    }
+
+    .result-rank {
+        font-size: 18px;
+        min-width: 30px;
+    }
+
+    .gap-status {
+        font-size: 16px;
+        padding: 10px;
+    }
+
+    .isochrone-results,
+    .gap-analysis-results,
+    .comparison-results {
+        padding: 14px;
+    }
+
+    .zone-stat {
+        padding: 8px;
+        font-size: 13px;
+    }
+}
+
+@media (max-width: 480px) {
+    .analysis-modes {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .analysis-mode-btn {
+        flex-direction: column;
+        padding: 12px 8px;
+    }
+
+    .mode-text {
+        font-size: 11px;
+    }
+
+    .gap-status {
+        font-size: 14px;
+        padding: 8px;
+    }
+
+    .comparison-results h4,
+    .isochrone-results h4,
+    .gap-analysis-results h4 {
+        font-size: 14px;
+    }
+}
+
+/* Tooltip Enhancement */
+.analysis-mode-btn[title]:hover::after {
+    content: attr(title);
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(0, 0, 0, 0.85);
+    color: white;
+    padding: 6px 10px;
+    border-radius: 6px;
+    font-size: 11px;
+    white-space: nowrap;
+    margin-bottom: 8px;
+    z-index: 1000;
+    pointer-events: none;
+    animation: fadeIn 0.2s ease;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
