@@ -1,1046 +1,893 @@
 /**
  * Analysis Utilities Module
- * Handles spatial analysis operations using Turf.js
+ * Handles spatial analysis operations using Turf.js and RoutingService
  */
 
 const AnalysisUtils = {
-    // Analysis state
-    state: {
-        currentMode: null,
-        analysisLayer: null,
-        markers: [],
-        lastClickPoint: null,
-        allFacilities: []
-    },
-
-    /**
-     * Initialize analysis functionality
-     * @param {L.Map} map - Leaflet map instance
-     */
-    init(map) {
-        this.map = map;
-        this.state.analysisLayer = L.layerGroup().addTo(map);
-        this.setupEventListeners();
-        this.setupMapClickHandler();
-    },
-
-    /**
-     * Setup event listeners for analysis controls
-     */
-    setupEventListeners() {
-        // Toggle panel
-        const toggleBtn = document.getElementById('analysis-toggle');
-        const panel = document.getElementById('analysis-panel');
-        const closeBtn = document.getElementById('analysis-close');
-
-        toggleBtn?.addEventListener('click', () => {
-            panel.classList.toggle('active');
-        });
-
-        closeBtn?.addEventListener('click', () => {
-            panel.classList.remove('active');
-        });
-
-        // Mode buttons
-        const modeButtons = document.querySelectorAll('.analysis-mode-btn');
-        modeButtons.forEach(btn => {
-            btn.addEventListener('click', (e) => {
-                const mode = e.currentTarget.dataset.mode;
-                this.setMode(mode);
-                modeButtons.forEach(b => b.classList.remove('active'));
-                e.currentTarget.classList.add('active');
-            });
-        });
-
-        // Clear analysis button
-        const clearBtn = document.getElementById('clear-analysis');
-        clearBtn?.addEventListener('click', () => {
-            this.clearAnalysis();
-        });
-    },
-
-    /**
-     * Set analysis mode
-     * @param {string} mode - Analysis mode (nearest, distance, buffer, topN, isochrone, gap, compare)
-     */
-    setMode(mode) {
-        this.state.currentMode = mode;
-        this.state.lastClickPoint = null;
-        const infoDiv = document.getElementById('analysis-info');
-        
-        const instructions = {
-            nearest: '🎯 Klik pada peta untuk mencari fasilitas terdekat dari titik tersebut.',
-            distance: '📏 Klik dua titik pada peta untuk mengukur jarak antara keduanya.',
-            buffer: '⭕ Klik pada peta untuk menampilkan area layanan 1km dari titik tersebut.',
-            topN: '🏆 Klik pada peta untuk mencari 5 fasilitas terdekat dari lokasi Anda.',
-            isochrone: '🕐 Klik pada peta untuk analisis zona waktu tempuh (isochrone).',
-            gap: '⚠️ Klik pada peta untuk analisis kesenjangan aksesibilitas (gap analysis).',
-            compare: '⚖️ Klik dua lokasi untuk membandingkan tingkat aksesibilitas.'
-        };
-        
-        if (infoDiv) {
-            infoDiv.innerHTML = `<p class="info-instruction">${instructions[mode] || 'Pilih mode analisis.'}</p>`;
-        }
-        
-        this.clearAnalysis();
-    },
-
-    /**
-     * Setup map click handler for analysis
-     */
-    setupMapClickHandler() {
-        this.map.on('click', (e) => {
-            if (!this.state.currentMode) return;
-
-            const point = [e.latlng.lng, e.latlng.lat];
-            
-            switch (this.state.currentMode) {
-                case 'nearest':
-                    this.findNearestFacility(point, e.latlng);
-                    break;
-                case 'distance':
-                    this.measureDistance(point, e.latlng);
-                    break;
-                case 'buffer':
-                    this.createBufferAnalysis(point, e.latlng);
-                    break;
-                case 'topN':
-                    this.findTopNearestFacilities(point, e.latlng, 5);
-                    break;
-                case 'isochrone':
-                    this.isochroneAnalysis(point, e.latlng);
-                    break;
-                case 'gap':
-                    this.gapAnalysis(point, e.latlng);
-                    break;
-                case 'compare':
-                    this.compareAccessibility(point, e.latlng);
-                    break;
-            }
-        });
-    },
-
-    /**
-     * Store facility data for analysis
-     * @param {Array} facilities - GeoJSON features
-     */
-    storeFacilities(facilities) {
-        this.state.allFacilities = facilities;
-    },
-
-    /**
-     * Find nearest facility from a point
-     * @param {Array} point - [lng, lat]
-     * @param {L.LatLng} latlng - Leaflet LatLng object
-     */
-    findNearestFacility(point, latlng) {
-        this.clearAnalysis();
-
-        // Add click marker
-        const clickMarker = L.circleMarker(latlng, {
-            radius: 8,
-            fillColor: '#ff0000',
-            color: '#fff',
-            weight: 2,
-            opacity: 1,
-            fillOpacity: 0.8
-        }).addTo(this.state.analysisLayer);
-        
-        clickMarker.bindPopup('📍 Titik Analisis').openPopup();
-
-        if (this.state.allFacilities.length === 0) {
-            this.showResults('Tidak ada data fasilitas yang dimuat.', 'error');
-            return;
-        }
-
-        // Create point feature
-        const from = turf.point(point);
-        let nearestFacility = null;
-        let minDistance = Infinity;
-
-        // Find nearest facility
-        this.state.allFacilities.forEach(facility => {
-            if (facility.geometry && facility.geometry.type === 'Point') {
-                const to = turf.point(facility.geometry.coordinates);
-                const distance = turf.distance(from, to, { units: 'kilometers' });
-                
-                if (distance < minDistance) {
-                    minDistance = distance;
-                    nearestFacility = facility;
-                }
-            }
-        });
-
-        if (nearestFacility) {
-            const facilityCoords = nearestFacility.geometry.coordinates;
-            const facilityLatLng = L.latLng(facilityCoords[1], facilityCoords[0]);
-
-            // Draw line to nearest facility
-            const line = L.polyline([latlng, facilityLatLng], {
-                color: '#0066cc',
-                weight: 3,
-                opacity: 0.7,
-                dashArray: '10, 10'
-            }).addTo(this.state.analysisLayer);
-
-            // Add marker for nearest facility
-            const facilityMarker = L.circleMarker(facilityLatLng, {
-                radius: 10,
-                fillColor: '#0066cc',
-                color: '#fff',
-                weight: 2,
-                opacity: 1,
-                fillOpacity: 0.8
-            }).addTo(this.state.analysisLayer);
-
-            const props = nearestFacility.properties;
-            const facilityName = props.nama || props.KETERANGAN || 'Fasilitas';
-            const facilityType = this.getFacilityType(props);
-
-            facilityMarker.bindPopup(`
-                <strong>🎯 Fasilitas Terdekat</strong><br>
-                <strong>${facilityName}</strong><br>
-                Jenis: ${facilityType}<br>
-                Jarak: <strong>${minDistance.toFixed(2)} km</strong>
-            `).openPopup();
-
-            // Show results
-            this.showResults(`
-                <div class="result-item">
-                    <div class="result-icon">🎯</div>
-                    <div class="result-details">
-                        <div class="result-name">${facilityName}</div>
-                        <div class="result-type">${facilityType}</div>
-                        <div class="result-distance">Jarak: <strong>${minDistance.toFixed(2)} km</strong></div>
-                        <div class="result-time">≈ ${this.calculateWalkingTime(minDistance)} menit berjalan kaki</div>
-                    </div>
-                </div>
-            `);
-
-            // Fit bounds to show both points
-            this.map.fitBounds(L.latLngBounds([latlng, facilityLatLng]), { padding: [50, 50] });
-        } else {
-            this.showResults('Tidak ditemukan fasilitas terdekat.', 'error');
-        }
-    },
-
-    /**
-     * Measure distance between two points
-     * @param {Array} point - [lng, lat]
-     * @param {L.LatLng} latlng - Leaflet LatLng object
-     */
-    measureDistance(point, latlng) {
-        if (!this.state.lastClickPoint) {
-            // First click - store point
-            this.clearAnalysis();
-            this.state.lastClickPoint = { point, latlng };
-            
-            const marker = L.circleMarker(latlng, {
-                radius: 8,
-                fillColor: '#28a745',
-                color: '#fff',
-                weight: 2,
-                opacity: 1,
-                fillOpacity: 0.8
-            }).addTo(this.state.analysisLayer);
-            
-            marker.bindPopup('📍 Titik Awal').openPopup();
-            
-            this.showResults(`
-                <div class="result-info">
-                    <p>Klik titik kedua pada peta untuk mengukur jarak.</p>
-                </div>
-            `);
-        } else {
-            // Second click - calculate distance
-            const from = turf.point(this.state.lastClickPoint.point);
-            const to = turf.point(point);
-            const distance = turf.distance(from, to, { units: 'kilometers' });
-
-            // Add second marker
-            const marker2 = L.circleMarker(latlng, {
-                radius: 8,
-                fillColor: '#dc3545',
-                color: '#fff',
-                weight: 2,
-                opacity: 1,
-                fillOpacity: 0.8
-            }).addTo(this.state.analysisLayer);
-            
-            marker2.bindPopup('📍 Titik Akhir').openPopup();
-
-            // Draw line
-            const line = L.polyline([this.state.lastClickPoint.latlng, latlng], {
-                color: '#ffc107',
-                weight: 4,
-                opacity: 0.8
-            }).addTo(this.state.analysisLayer);
-
-            // Add distance label at midpoint
-            const midpoint = [(this.state.lastClickPoint.latlng.lat + latlng.lat) / 2,
-                            (this.state.lastClickPoint.latlng.lng + latlng.lng) / 2];
-            
-            const label = L.marker(midpoint, {
-                icon: L.divIcon({
-                    className: 'distance-label',
-                    html: `<div style="background: #ffc107; color: #000; padding: 4px 8px; border-radius: 4px; font-weight: bold; box-shadow: 0 2px 4px rgba(0,0,0,0.3);">${distance.toFixed(2)} km</div>`,
-                    iconSize: [100, 30]
-                })
-            }).addTo(this.state.analysisLayer);
-
-            // Show results
-            this.showResults(`
-                <div class="result-item">
-                    <div class="result-icon">📏</div>
-                    <div class="result-details">
-                        <div class="result-name">Jarak Linear</div>
-                        <div class="result-distance"><strong>${distance.toFixed(2)} km</strong></div>
-                        <div class="result-distance">${(distance * 1000).toFixed(0)} meter</div>
-                        <div class="result-time">≈ ${this.calculateWalkingTime(distance)} menit berjalan kaki</div>
-                        <div class="result-time">≈ ${this.calculateBikingTime(distance)} menit bersepeda</div>
-                    </div>
-                </div>
-            `);
-
-            // Fit bounds
-            this.map.fitBounds(L.latLngBounds([this.state.lastClickPoint.latlng, latlng]), { padding: [50, 50] });
-
-            // Reset for next measurement
-            this.state.lastClickPoint = null;
-        }
-    },
-
-    /**
-     * Create buffer analysis around a point
-     * @param {Array} point - [lng, lat]
-     * @param {L.LatLng} latlng - Leaflet LatLng object
-     */
-    createBufferAnalysis(point, latlng) {
-        this.clearAnalysis();
-
-        // Add click marker
-        const clickMarker = L.circleMarker(latlng, {
-            radius: 8,
-            fillColor: '#6f42c1',
-            color: '#fff',
-            weight: 2,
-            opacity: 1,
-            fillOpacity: 0.8
-        }).addTo(this.state.analysisLayer);
-        
-        clickMarker.bindPopup('📍 Pusat Analisis').openPopup();
-
-        // Create buffers at different distances
-        const buffers = [
-            { distance: 0.5, color: '#28a745', label: '500m (Walkable)' },
-            { distance: 1.0, color: '#ffc107', label: '1 km (Recommended)' },
-            { distance: 1.5, color: '#dc3545', label: '1.5 km (Extended)' }
-        ];
-
-        const center = turf.point(point);
-        const facilitiesInRange = {
-            '500m': [],
-            '1km': [],
-            '1.5km': []
-        };
-
-        buffers.forEach(buffer => {
-            const buffered = turf.buffer(center, buffer.distance, { units: 'kilometers' });
-            const coords = buffered.geometry.coordinates[0].map(coord => [coord[1], coord[0]]);
-            
-            L.polygon(coords, {
-                color: buffer.color,
-                weight: 2,
-                opacity: 0.6,
-                fillColor: buffer.color,
-                fillOpacity: 0.1
-            }).addTo(this.state.analysisLayer)
-              .bindPopup(`<strong>Service Area</strong><br>${buffer.label}`);
-        });
-
-        // Count facilities within each buffer
-        this.state.allFacilities.forEach(facility => {
-            if (facility.geometry && facility.geometry.type === 'Point') {
-                const facilityPoint = turf.point(facility.geometry.coordinates);
-                const distance = turf.distance(center, facilityPoint, { units: 'kilometers' });
-                
-                if (distance <= 0.5) facilitiesInRange['500m'].push(facility);
-                if (distance <= 1.0) facilitiesInRange['1km'].push(facility);
-                if (distance <= 1.5) facilitiesInRange['1.5km'].push(facility);
-            }
-        });
-
-        // Show results
-        this.showResults(`
-            <div class="result-item">
-                <div class="result-icon">⭕</div>
-                <div class="result-details">
-                    <div class="result-name">Analisis Service Area</div>
-                    <div class="buffer-stats">
-                        <div class="buffer-stat" style="border-left: 4px solid #28a745;">
-                            <strong>500m:</strong> ${facilitiesInRange['500m'].length} fasilitas
-                        </div>
-                        <div class="buffer-stat" style="border-left: 4px solid #ffc107;">
-                            <strong>1 km:</strong> ${facilitiesInRange['1km'].length} fasilitas
-                        </div>
-                        <div class="buffer-stat" style="border-left: 4px solid #dc3545;">
-                            <strong>1.5 km:</strong> ${facilitiesInRange['1.5km'].length} fasilitas
-                        </div>
-                    </div>
-                    <div class="result-info">
-                        ${facilitiesInRange['1km'].length === 0 
-                            ? '<div style="color: #dc3545; margin-top: 10px;">⚠️ Gap Aksesibilitas: Tidak ada fasilitas dalam radius 1 km!</div>'
-                            : '<div style="color: #28a745; margin-top: 10px;">✓ Area terlayani dengan baik</div>'}
-                    </div>
-                </div>
-            </div>
-        `);
-
-        // Zoom to buffer
-        const buffered = turf.buffer(center, 1.5, { units: 'kilometers' });
-        const coords = buffered.geometry.coordinates[0].map(coord => [coord[1], coord[0]]);
-        this.map.fitBounds(L.latLngBounds(coords), { padding: [50, 50] });
-    },
-
-    /**
-     * Get facility type from properties
-     * @param {Object} props - Feature properties
-     * @returns {string} Facility type
-     */
-    getFacilityType(props) {
-        if (props.jenjang) {
-            return props.jenjang.toUpperCase();
-        }
-        if (props.KETERANGAN) {
-            return props.KETERANGAN;
-        }
-        if (props.tipe_faskes) {
-            return props.tipe_faskes;
-        }
-        return 'Fasilitas';
-    },
-
-    /**
-     * Calculate walking time based on distance
-     * @param {number} distance - Distance in kilometers
-     * @returns {number} Time in minutes
-     */
-    calculateWalkingTime(distance) {
-        // Average walking speed: 5 km/h
-        return Math.round((distance / 5) * 60);
-    },
-
-    /**
-     * Calculate biking time based on distance
-     * @param {number} distance - Distance in kilometers
-     * @returns {number} Time in minutes
-     */
-    calculateBikingTime(distance) {
-        // Average biking speed: 15 km/h
-        return Math.round((distance / 15) * 60);
-    },
-
-    /**
-     * Show analysis results
-     * @param {string} content - HTML content to display
-     * @param {string} type - Result type (success, error, info)
-     */
-    showResults(content, type = 'success') {
-        const resultsDiv = document.getElementById('analysis-results');
-        const resultsContent = document.getElementById('results-content');
-        const infoDiv = document.getElementById('analysis-info');
-        
-        if (resultsDiv && resultsContent) {
-            resultsDiv.style.display = 'block';
-            resultsContent.innerHTML = content;
-            resultsContent.className = `results-content ${type}`;
-        }
-        
-        if (infoDiv && type !== 'error') {
-            infoDiv.style.display = 'none';
-        }
-    },
-
-    /**
-     * Clear all analysis layers and results
-     */
-    clearAnalysis() {
-        if (this.state.analysisLayer) {
-            this.state.analysisLayer.clearLayers();
-        }
-        this.state.lastClickPoint = null;
-        
-        const resultsDiv = document.getElementById('analysis-results');
-        const infoDiv = document.getElementById('analysis-info');
-        
-        if (resultsDiv) {
-            resultsDiv.style.display = 'none';
-        }
-        
-        if (infoDiv) {
-            infoDiv.style.display = 'block';
-        }
-    },
-
-    /**
-     * Find top N nearest facilities from a point
-     * @param {Array} point - [lng, lat]
-     * @param {L.LatLng} latlng - Leaflet LatLng object
-     * @param {number} topN - Number of facilities to find (default: 5)
-     */
-    findTopNearestFacilities(point, latlng, topN = 5) {
-        this.clearAnalysis();
-
-        // Add click marker
-        const clickMarker = L.circleMarker(latlng, {
-            radius: 8,
-            fillColor: '#ff0000',
-            color: '#fff',
-            weight: 2,
-            opacity: 1,
-            fillOpacity: 0.8
-        }).addTo(this.state.analysisLayer);
-        
-        clickMarker.bindPopup('📍 Lokasi Anda').openPopup();
-
-        if (this.state.allFacilities.length === 0) {
-            this.showResults('Tidak ada data fasilitas yang dimuat.', 'error');
-            return;
-        }
-
-        // Create point feature
-        const from = turf.point(point);
-        const facilitiesWithDistance = [];
-
-        // Calculate distances for all facilities
-        this.state.allFacilities.forEach(facility => {
-            if (facility.geometry && facility.geometry.type === 'Point') {
-                const to = turf.point(facility.geometry.coordinates);
-                const distance = turf.distance(from, to, { units: 'kilometers' });
-                facilitiesWithDistance.push({
-                    facility,
-                    distance
-                });
-            }
-        });
-
-        // Sort by distance and get top N
-        const topFacilities = facilitiesWithDistance
-            .sort((a, b) => a.distance - b.distance)
-            .slice(0, topN);
-
-        if (topFacilities.length === 0) {
-            this.showResults('Tidak ditemukan fasilitas.', 'error');
-            return;
-        }
-
-        // Visualize top facilities
-        const bounds = [latlng];
-        const colors = ['#28a745', '#0066cc', '#ffc107', '#dc3545', '#6f42c1'];
-        
-        let resultsHTML = '<div class="multi-facility-results">';
-        
-        topFacilities.forEach((item, index) => {
-            const facility = item.facility;
-            const facilityCoords = facility.geometry.coordinates;
-            const facilityLatLng = L.latLng(facilityCoords[1], facilityCoords[0]);
-            const color = colors[index % colors.length];
-
-            // Draw line
-            L.polyline([latlng, facilityLatLng], {
-                color: color,
-                weight: 2,
-                opacity: 0.6,
-                dashArray: index === 0 ? null : '5, 5'
-            }).addTo(this.state.analysisLayer);
-
-            // Add numbered marker
-            const facilityMarker = L.marker(facilityLatLng, {
-                icon: L.divIcon({
-                    className: 'numbered-marker',
-                    html: `<div style="background: ${color}; color: white; width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; border: 2px solid white; box-shadow: 0 2px 4px rgba(0,0,0,0.3);">${index + 1}</div>`,
-                    iconSize: [28, 28]
-                })
-            }).addTo(this.state.analysisLayer);
-
-            const props = facility.properties;
-            const facilityName = props.nama || props.KETERANGAN || 'Fasilitas';
-            const facilityType = this.getFacilityType(props);
-
-            facilityMarker.bindPopup(`
-                <strong>#${index + 1} - ${facilityName}</strong><br>
-                Jenis: ${facilityType}<br>
-                Jarak: <strong>${item.distance.toFixed(2)} km</strong><br>
-                ≈ ${this.calculateWalkingTime(item.distance)} menit berjalan
-            `);
-
-            bounds.push(facilityLatLng);
-
-            // Add to results
-            resultsHTML += `
-                <div class="result-item" style="border-left: 4px solid ${color};">
-                    <div class="result-rank">#${index + 1}</div>
-                    <div class="result-details">
-                        <div class="result-name">${facilityName}</div>
-                        <div class="result-type">${facilityType}</div>
-                        <div class="result-distance">${item.distance.toFixed(2)} km • ${this.calculateWalkingTime(item.distance)} menit</div>
-                    </div>
-                </div>
-            `;
-        });
-
-        resultsHTML += '</div>';
-        this.showResults(resultsHTML);
-
-        // Fit bounds to show all facilities
-        this.map.fitBounds(L.latLngBounds(bounds), { padding: [50, 50] });
-    },
-
-    /**
-     * Advanced isochrone analysis - multiple distance rings
-     * @param {Array} point - [lng, lat]
-     * @param {L.LatLng} latlng - Leaflet LatLng object
-     */
-    isochroneAnalysis(point, latlng) {
-        this.clearAnalysis();
-
-        // Add click marker
-        const clickMarker = L.circleMarker(latlng, {
-            radius: 8,
-            fillColor: '#6f42c1',
-            color: '#fff',
-            weight: 2,
-            opacity: 1,
-            fillOpacity: 0.8
-        }).addTo(this.state.analysisLayer);
-        
-        clickMarker.bindPopup('📍 Pusat Analisis Isochrone').openPopup();
-
-        // Define isochrone zones (in km)
-        const zones = [
-            { distance: 0.5, color: '#28a745', label: '5 menit', minutes: 5 },
-            { distance: 1.0, color: '#17a2b8', label: '10 menit', minutes: 10 },
-            { distance: 1.5, color: '#ffc107', label: '15 menit', minutes: 15 },
-            { distance: 2.0, color: '#fd7e14', label: '20 menit', minutes: 20 },
-            { distance: 2.5, color: '#dc3545', label: '25+ menit', minutes: 25 }
-        ];
-
-        const center = turf.point(point);
-        const zoneStats = {};
-
-        // Create isochrone zones
-        zones.reverse().forEach((zone, index) => {
-            const buffered = turf.buffer(center, zone.distance, { units: 'kilometers' });
-            const coords = buffered.geometry.coordinates[0].map(coord => [coord[1], coord[0]]);
-            
-            const polygon = L.polygon(coords, {
-                color: zone.color,
-                weight: 2,
-                opacity: 0.7,
-                fillColor: zone.color,
-                fillOpacity: 0.15
-            }).addTo(this.state.analysisLayer);
-            
-            polygon.bindPopup(`
-                <strong>Zona ${zone.label}</strong><br>
-                Radius: ${zone.distance} km<br>
-                Waktu tempuh berjalan kaki
-            `);
-
-            // Count facilities in this zone
-            const facilitiesInZone = this.state.allFacilities.filter(facility => {
-                if (facility.geometry && facility.geometry.type === 'Point') {
-                    const facilityPoint = turf.point(facility.geometry.coordinates);
-                    const distance = turf.distance(center, facilityPoint, { units: 'kilometers' });
-                    return distance <= zone.distance;
-                }
-                return false;
-            });
-
-            zoneStats[zone.label] = {
-                count: facilitiesInZone.length,
-                color: zone.color,
-                distance: zone.distance,
-                minutes: zone.minutes
-            };
-        });
-
-        zones.reverse(); // Restore order
-
-        // Generate results
-        let resultsHTML = `
-            <div class="isochrone-results">
-                <h4>Analisis Aksesibilitas Waktu Tempuh</h4>
-                <p style="font-size: 0.9em; color: #666; margin-bottom: 15px;">Berdasarkan kecepatan berjalan kaki rata-rata (5 km/jam)</p>
-        `;
-
-        zones.forEach(zone => {
-            const stats = zoneStats[zone.label];
-            resultsHTML += `
-                <div class="zone-stat" style="border-left: 4px solid ${zone.color}; padding-left: 10px; margin-bottom: 10px;">
-                    <div style="font-weight: bold; color: ${zone.color};">${zone.label} (${zone.distance} km)</div>
-                    <div style="font-size: 0.9em;">${stats.count} fasilitas tersedia</div>
-                </div>
-            `;
-        });
-
-        // Accessibility assessment
-        const nearestZone = zoneStats['5 menit'].count;
-        const walkableZone = zoneStats['15 menit'].count;
-        
-        resultsHTML += `
-            <div class="accessibility-assessment" style="margin-top: 15px; padding: 10px; background: #f8f9fa; border-radius: 4px;">
-                <h5 style="margin: 0 0 10px 0;">Penilaian Aksesibilitas</h5>
-        `;
-
-        if (nearestZone > 0) {
-            resultsHTML += `<div style="color: #28a745; margin-bottom: 5px;">✓ ${nearestZone} fasilitas dalam jarak sangat dekat (≤5 menit)</div>`;
-        } else {
-            resultsHTML += `<div style="color: #dc3545; margin-bottom: 5px;">✗ Tidak ada fasilitas dalam radius 500m</div>`;
-        }
-
-        if (walkableZone >= 3) {
-            resultsHTML += `<div style="color: #28a745;">✓ Aksesibilitas baik: ${walkableZone} fasilitas dalam 15 menit berjalan</div>`;
-        } else if (walkableZone > 0) {
-            resultsHTML += `<div style="color: #ffc107;">⚠ Aksesibilitas sedang: ${walkableZone} fasilitas dalam 15 menit</div>`;
-        } else {
-            resultsHTML += `<div style="color: #dc3545;">⚠ GAP AKSESIBILITAS: Tidak ada fasilitas dalam 15 menit berjalan kaki!</div>`;
-        }
-
-        resultsHTML += `</div></div>`;
-        
-        this.showResults(resultsHTML);
-
-        // Fit bounds to show largest zone
-        const buffered = turf.buffer(center, 2.5, { units: 'kilometers' });
-        const coords = buffered.geometry.coordinates[0].map(coord => [coord[1], coord[0]]);
-        this.map.fitBounds(L.latLngBounds(coords), { padding: [30, 30] });
-    },
-
-    /**
-     * Gap Analysis - Identify underserved areas
-     * @param {Array} point - [lng, lat]
-     * @param {L.LatLng} latlng - Leaflet LatLng object
-     */
-    gapAnalysis(point, latlng) {
-        this.clearAnalysis();
-
-        const clickMarker = L.circleMarker(latlng, {
-            radius: 10,
-            fillColor: '#dc3545',
-            color: '#fff',
-            weight: 3,
-            opacity: 1,
-            fillOpacity: 0.8
-        }).addTo(this.state.analysisLayer);
-        
-        clickMarker.bindPopup('📍 Lokasi Gap Analysis').openPopup();
-
-        const center = turf.point(point);
-        const standardDistance = 1.0; // 1 km standard WHO
-        const criticalDistance = 0.5; // 500m critical distance
-
-        // Check facilities within standard distance
-        const facilitiesNearby = this.state.allFacilities.filter(facility => {
-            if (facility.geometry && facility.geometry.type === 'Point') {
-                const facilityPoint = turf.point(facility.geometry.coordinates);
-                const distance = turf.distance(center, facilityPoint, { units: 'kilometers' });
-                return distance <= standardDistance;
-            }
-            return false;
-        });
-
-        const facilitiesCritical = this.state.allFacilities.filter(facility => {
-            if (facility.geometry && facility.geometry.type === 'Point') {
-                const facilityPoint = turf.point(facility.geometry.coordinates);
-                const distance = turf.distance(center, facilityPoint, { units: 'kilometers' });
-                return distance <= criticalDistance;
-            }
-            return false;
-        });
-
-        // Visualize standard and critical zones
-        const criticalZone = turf.buffer(center, criticalDistance, { units: 'kilometers' });
-        const criticalCoords = criticalZone.geometry.coordinates[0].map(coord => [coord[1], coord[0]]);
-        L.polygon(criticalCoords, {
-            color: '#28a745',
-            weight: 2,
-            opacity: 0.7,
-            fillColor: '#28a745',
-            fillOpacity: 0.1
-        }).addTo(this.state.analysisLayer)
-          .bindPopup('<strong>Zona Ideal</strong><br>≤500m (Walking Distance)');
-
-        const standardZone = turf.buffer(center, standardDistance, { units: 'kilometers' });
-        const standardCoords = standardZone.geometry.coordinates[0].map(coord => [coord[1], coord[0]]);
-        L.polygon(standardCoords, {
-            color: '#ffc107',
-            weight: 2,
-            opacity: 0.7,
-            fillColor: '#ffc107',
-            fillOpacity: 0.1
-        }).addTo(this.state.analysisLayer)
-          .bindPopup('<strong>Zona Standar</strong><br>≤1 km (WHO Standard)');
-
-        // Categorize facilities by type
-        const facilityTypes = {};
-        facilitiesNearby.forEach(f => {
-            const type = this.getFacilityType(f.properties);
-            facilityTypes[type] = (facilityTypes[type] || 0) + 1;
-        });
-
-        // Determine gap status
-        let gapStatus = '';
-        let gapColor = '';
-        let gapLevel = '';
-
-        if (facilitiesCritical.length === 0 && facilitiesNearby.length === 0) {
-            gapStatus = 'CRITICAL GAP';
-            gapColor = '#dc3545';
-            gapLevel = 'Akses Sangat Buruk';
-        } else if (facilitiesCritical.length === 0) {
-            gapStatus = 'MODERATE GAP';
-            gapColor = '#ffc107';
-            gapLevel = 'Akses Sedang';
-        } else if (facilitiesCritical.length < 2) {
-            gapStatus = 'MINOR GAP';
-            gapColor = '#17a2b8';
-            gapLevel = 'Akses Cukup';
-        } else {
-            gapStatus = 'WELL SERVED';
-            gapColor = '#28a745';
-            gapLevel = 'Akses Baik';
-        }
-
-        let resultsHTML = `
-            <div class="gap-analysis-results">
-                <div class="gap-status" style="background: ${gapColor}; color: white; padding: 12px; border-radius: 6px; margin-bottom: 15px; text-align: center;">
-                    <div style="font-weight: bold; font-size: 1.1em;">${gapStatus}</div>
-                    <div style="font-size: 0.9em; opacity: 0.9;">${gapLevel}</div>
-                </div>
-                
-                <div class="gap-metrics">
-                    <div class="metric-row" style="display: flex; justify-content: space-between; margin-bottom: 10px; padding: 8px; background: #f8f9fa; border-radius: 4px;">
-                        <span>Zona Ideal (≤500m):</span>
-                        <strong style="color: ${facilitiesCritical.length > 0 ? '#28a745' : '#dc3545'};">${facilitiesCritical.length} fasilitas</strong>
-                    </div>
-                    <div class="metric-row" style="display: flex; justify-content: space-between; margin-bottom: 10px; padding: 8px; background: #f8f9fa; border-radius: 4px;">
-                        <span>Zona Standar (≤1km):</span>
-                        <strong style="color: ${facilitiesNearby.length > 0 ? '#28a745' : '#dc3545'};">${facilitiesNearby.length} fasilitas</strong>
-                    </div>
-                </div>
-
-                <h5 style="margin-top: 15px; margin-bottom: 10px;">Distribusi Tipe Fasilitas:</h5>
-                <div class="facility-breakdown">
-        `;
-
-        if (Object.keys(facilityTypes).length > 0) {
-            for (const [type, count] of Object.entries(facilityTypes)) {
-                resultsHTML += `
-                    <div class="type-row" style="display: flex; justify-content: space-between; padding: 5px 0; border-bottom: 1px solid #eee;">
-                        <span>${type}</span>
-                        <strong>${count}</strong>
-                    </div>
-                `;
-            }
-        } else {
-            resultsHTML += '<div style="color: #999; font-style: italic;">Tidak ada fasilitas dalam radius 1 km</div>';
-        }
-
-        resultsHTML += `
-                </div>
-
-                <div class="recommendations" style="margin-top: 15px; padding: 10px; background: #e7f3ff; border-left: 4px solid #0066cc; border-radius: 4px;">
-                    <h5 style="margin: 0 0 8px 0; color: #0066cc;">💡 Rekomendasi:</h5>
-        `;
-
-        if (facilitiesCritical.length === 0) {
-            resultsHTML += '<div style="font-size: 0.9em;">• Pertimbangkan pembangunan fasilitas baru dalam radius 500m</div>';
-        }
-        if (facilitiesNearby.length < 3) {
-            resultsHTML += '<div style="font-size: 0.9em;">• Tingkatkan jumlah fasilitas untuk memenuhi standar minimum</div>';
-        }
-        if (Object.keys(facilityTypes).length < 2) {
-            resultsHTML += '<div style="font-size: 0.9em;">• Diversifikasi jenis fasilitas untuk layanan yang lebih komprehensif</div>';
-        }
-        if (facilitiesNearby.length >= 3 && facilitiesCritical.length >= 2) {
-            resultsHTML += '<div style="font-size: 0.9em; color: #28a745;">✓ Area ini sudah terlayani dengan baik</div>';
-        }
-
-        resultsHTML += `
-                </div>
-            </div>
-        `;
-
-        this.showResults(resultsHTML);
-
-        // Fit bounds
-        this.map.fitBounds(L.latLngBounds(standardCoords), { padding: [50, 50] });
-    },
-
-    /**
-     * Compare accessibility from multiple points
-     * @param {Array} point - [lng, lat]
-     * @param {L.LatLng} latlng - Leaflet LatLng object
-     */
-    compareAccessibility(point, latlng) {
-        if (!this.state.lastClickPoint) {
-            // First click
-            this.clearAnalysis();
-            this.state.lastClickPoint = { point, latlng };
-            
-            const marker = L.circleMarker(latlng, {
-                radius: 8,
-                fillColor: '#0066cc',
-                color: '#fff',
-                weight: 2,
-                opacity: 1,
-                fillOpacity: 0.8
-            }).addTo(this.state.analysisLayer);
-            
-            marker.bindPopup('📍 Lokasi A').openPopup();
-            
-            this.showResults(`
-                <div class="result-info">
-                    <p>Klik lokasi kedua (Lokasi B) untuk membandingkan aksesibilitas.</p>
-                </div>
-            `);
-        } else {
-            // Second click - compare
-            const pointA = turf.point(this.state.lastClickPoint.point);
-            const pointB = turf.point(point);
-
-            const marker2 = L.circleMarker(latlng, {
-                radius: 8,
-                fillColor: '#dc3545',
-                color: '#fff',
-                weight: 2,
-                opacity: 1,
-                fillOpacity: 0.8
-            }).addTo(this.state.analysisLayer);
-            
-            marker2.bindPopup('📍 Lokasi B').openPopup();
-
-            // Calculate accessibility for both points
-            const radius = 1.0; // 1 km
-            
-            const facilitiesA = this.state.allFacilities.filter(facility => {
-                if (facility.geometry && facility.geometry.type === 'Point') {
-                    const facilityPoint = turf.point(facility.geometry.coordinates);
-                    return turf.distance(pointA, facilityPoint, { units: 'kilometers' }) <= radius;
-                }
-                return false;
-            });
-
-            const facilitiesB = this.state.allFacilities.filter(facility => {
-                if (facility.geometry && facility.geometry.type === 'Point') {
-                    const facilityPoint = turf.point(facility.geometry.coordinates);
-                    return turf.distance(pointB, facilityPoint, { units: 'kilometers' }) <= radius;
-                }
-                return false;
-            });
-
-            // Draw comparison circles
-            const circleA = turf.buffer(pointA, radius, { units: 'kilometers' });
-            const coordsA = circleA.geometry.coordinates[0].map(coord => [coord[1], coord[0]]);
-            L.polygon(coordsA, {
-                color: '#0066cc',
-                weight: 2,
-                opacity: 0.6,
-                fillColor: '#0066cc',
-                fillOpacity: 0.1
-            }).addTo(this.state.analysisLayer);
-
-            const circleB = turf.buffer(pointB, radius, { units: 'kilometers' });
-            const coordsB = circleB.geometry.coordinates[0].map(coord => [coord[1], coord[0]]);
-            L.polygon(coordsB, {
-                color: '#dc3545',
-                weight: 2,
-                opacity: 0.6,
-                fillColor: '#dc3545',
-                fillOpacity: 0.1
-            }).addTo(this.state.analysisLayer);
-
-            // Find nearest for each
-            let nearestA = null, nearestB = null;
-            let minDistA = Infinity, minDistB = Infinity;
-
-            this.state.allFacilities.forEach(facility => {
-                if (facility.geometry && facility.geometry.type === 'Point') {
-                    const facilityPoint = turf.point(facility.geometry.coordinates);
-                    const distA = turf.distance(pointA, facilityPoint, { units: 'kilometers' });
-                    const distB = turf.distance(pointB, facilityPoint, { units: 'kilometers' });
-                    
-                    if (distA < minDistA) {
-                        minDistA = distA;
-                        nearestA = facility;
-                    }
-                    if (distB < minDistB) {
-                        minDistB = distB;
-                        nearestB = facility;
-                    }
-                }
-            });
-
-            let resultsHTML = `
-                <div class="comparison-results">
-                    <h4>Perbandingan Aksesibilitas</h4>
-                    <p style="font-size: 0.9em; color: #666; margin-bottom: 15px;">Radius analisis: ${radius} km</p>
-                    
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px;">
-                        <div style="padding: 10px; background: linear-gradient(135deg, #0066cc22, transparent); border: 2px solid #0066cc; border-radius: 6px;">
-                            <div style="font-weight: bold; color: #0066cc; margin-bottom: 5px;">📍 Lokasi A</div>
-                            <div style="font-size: 1.2em; font-weight: bold;">${facilitiesA.length}</div>
-                            <div style="font-size: 0.85em; color: #666;">fasilitas</div>
-                        </div>
-                        <div style="padding: 10px; background: linear-gradient(135deg, #dc354522, transparent); border: 2px solid #dc3545; border-radius: 6px;">
-                            <div style="font-weight: bold; color: #dc3545; margin-bottom: 5px;">📍 Lokasi B</div>
-                            <div style="font-size: 1.2em; font-weight: bold;">${facilitiesB.length}</div>
-                            <div style="font-size: 0.85em; color: #666;">fasilitas</div>
-                        </div>
-                    </div>
-
-                    <div style="margin-bottom: 15px;">
-                        <h5 style="margin-bottom: 8px;">Fasilitas Terdekat:</h5>
-                        <div style="background: #f8f9fa; padding: 8px; border-radius: 4px; margin-bottom: 5px;">
-                            <div style="color: #0066cc; font-weight: bold;">Lokasi A:</div>
-                            <div style="font-size: 0.9em;">${nearestA ? (nearestA.properties.nama || nearestA.properties.KETERANGAN) : 'N/A'} - ${minDistA.toFixed(2)} km</div>
-                        </div>
-                        <div style="background: #f8f9fa; padding: 8px; border-radius: 4px;">
-                            <div style="color: #dc3545; font-weight: bold;">Lokasi B:</div>
-                            <div style="font-size: 0.9em;">${nearestB ? (nearestB.properties.nama || nearestB.properties.KETERANGAN) : 'N/A'} - ${minDistB.toFixed(2)} km</div>
-                        </div>
-                    </div>
-
-                    <div style="padding: 10px; background: #e7f3ff; border-left: 4px solid #0066cc; border-radius: 4px;">
-                        <strong>Kesimpulan:</strong><br>
-            `;
-
-            const diff = facilitiesA.length - facilitiesB.length;
-            if (diff > 0) {
-                resultsHTML += `<div style="margin-top: 5px;">Lokasi A memiliki aksesibilitas <strong style="color: #28a745;">${diff} fasilitas lebih baik</strong> dibanding Lokasi B.</div>`;
-            } else if (diff < 0) {
-                resultsHTML += `<div style="margin-top: 5px;">Lokasi B memiliki aksesibilitas <strong style="color: #28a745;">${Math.abs(diff)} fasilitas lebih baik</strong> dibanding Lokasi A.</div>`;
-            } else {
-                resultsHTML += `<div style="margin-top: 5px;">Kedua lokasi memiliki <strong>aksesibilitas yang setara</strong>.</div>`;
-            }
-
-            resultsHTML += `
-                    </div>
-                </div>
-            `;
-
-            this.showResults(resultsHTML);
-
-            // Fit bounds to show both points
-            this.map.fitBounds(L.latLngBounds([this.state.lastClickPoint.latlng, latlng]), { padding: [100, 100] });
-
-            this.state.lastClickPoint = null;
-        }
+  state: {
+    currentMode: null,
+    analysisLayer: null,
+    markers: [],
+    lastClickPoint: null,
+    allFacilities: [],
+    districtBoundary: null,
+    isochroneData: null,
+    isochroneRanges: [],
+    activeIsochroneFilter: null,
+    currentIsochroneLayer: null,
+    measureMethod: "road",
+    nearestMethod: "road",
+    predictionMethod: "road",
+    predictionCache: { center: null, facilities: [], lines: [] },
+  },
+
+  init(map) {
+    if (!map) return;
+    this.map = map;
+    this.state.analysisLayer = L.layerGroup().addTo(map);
+    try {
+      this.setupEventListeners();
+    } catch (e) {
+      console.error(e);
     }
+    this.setupMapClickHandler();
+  },
+
+  setDistrictBoundary(feature) {
+    this.state.districtBoundary = feature;
+  },
+
+  setupEventListeners() {
+    const toggleBtn = document.getElementById("analysis-toggle");
+    const panel = document.getElementById("analysis-panel");
+    const closeBtn = document.getElementById("analysis-close");
+    const clearBtn = document.getElementById("clear-analysis");
+    const modeButtons = document.querySelectorAll(".analysis-mode-btn");
+
+    // Kita hanya menggeser MAP, tidak Footer
+    const mapWrapper = document.querySelector(".map-wrapper");
+
+    if (!toggleBtn || !panel) return;
+
+    toggleBtn.addEventListener("click", (e) => {
+      e.preventDefault();
+      panel.classList.remove("has-results");
+      panel.classList.toggle("active");
+
+      // Geser Peta Saja (Agar tidak tertutup sidebar)
+      if (mapWrapper && window.innerWidth > 768) {
+        const isActive = panel.classList.contains("active");
+        mapWrapper.classList.toggle("sidebar-open", isActive);
+        // Refresh ukuran peta
+        setTimeout(() => {
+          this.map.invalidateSize();
+        }, 405);
+      }
+    });
+
+    if (closeBtn)
+      closeBtn.addEventListener("click", () => {
+        panel.classList.remove("active");
+        // Kembalikan posisi peta
+        if (mapWrapper) {
+          mapWrapper.classList.remove("sidebar-open");
+          setTimeout(() => {
+            this.map.invalidateSize();
+          }, 405);
+        }
+      });
+
+    if (clearBtn)
+      clearBtn.addEventListener("click", () => this.clearAnalysis());
+
+    modeButtons.forEach((btn) => {
+      btn.addEventListener("click", (e) => {
+        const mode = e.currentTarget.dataset.mode;
+        this.setMode(mode);
+        modeButtons.forEach((b) => b.classList.remove("active"));
+        e.currentTarget.classList.add("active");
+      });
+    });
+  },
+
+  setMode(mode) {
+    this.state.currentMode = mode;
+    this.state.lastClickPoint = null;
+    this.state.isochroneData = null;
+    this.state.currentIsochroneLayer = null;
+    this.state.activeIsochroneFilter = null;
+    this.state.predictionCache = { center: null, facilities: [], lines: [] };
+
+    if (mode === "distance") this.state.measureMethod = "road";
+    if (mode === "nearest") this.state.nearestMethod = "road";
+    if (mode === "prediction") this.state.predictionMethod = "road";
+
+    const infoDiv = document.getElementById("analysis-info");
+    const panel = document.getElementById("analysis-panel");
+
+    let htmlContent = "";
+    const btnStyle =
+      "cursor:pointer; padding:8px 12px; border-radius:6px; font-size:0.85em; font-weight:600; border:1px solid #ccc; background:#fff; flex:1; text-align:center; transition:all 0.2s;";
+    const activeStyle =
+      "background:#6f42c1; color:white; border-color:#6f42c1;";
+
+    if (mode === "distance") {
+      htmlContent = `
+            <p class="info-instruction" style="margin-bottom:10px;">Pilih metode pengukuran:</p>
+            <div style="display:flex; gap:10px; margin-bottom:12px;">
+                <button id="btn-dist-line" onclick="AnalysisUtils.setMeasureMethod('line')" style="${btnStyle}">📏 Garis Lurus</button>
+                <button id="btn-dist-road" onclick="AnalysisUtils.setMeasureMethod('road')" style="${btnStyle} ${activeStyle}">🚗 Ikuti Jalan (API)</button>
+            </div>
+            <p class="info-instruction" style="font-size:0.85em; color:#666;"><span id="dist-desc">Klik Titik A lalu Titik B untuk mengukur rute.</span></p>
+        `;
+      if (panel) panel.classList.add("active");
+    } else if (mode === "nearest") {
+      htmlContent = `
+            <p class="info-instruction" style="margin-bottom:10px;">Pilih metode pencarian:</p>
+            <div style="display:flex; gap:10px; margin-bottom:12px;">
+                <button id="btn-near-line" onclick="AnalysisUtils.setNearestMethod('line')" style="${btnStyle}">📏 Garis Lurus</button>
+                <button id="btn-near-road" onclick="AnalysisUtils.setNearestMethod('road')" style="${btnStyle} ${activeStyle}">🚗 Ikuti Jalan (API)</button>
+            </div>
+            <p class="info-instruction" style="font-size:0.85em; color:#666;"><span id="near-desc">Klik peta untuk mencari fasilitas terdekat.</span></p>
+        `;
+      if (panel) panel.classList.add("active");
+    } else if (mode === "prediction") {
+      htmlContent = `
+            <p class="info-instruction" style="margin-bottom:10px;">Metode Prediksi:</p>
+            <div style="display:flex; gap:10px; margin-bottom:12px;">
+                <button id="btn-pred-line" onclick="AnalysisUtils.setPredictionMethod('line')" style="${btnStyle}">📏 Garis Lurus</button>
+                <button id="btn-pred-road" onclick="AnalysisUtils.setPredictionMethod('road')" style="${btnStyle} ${activeStyle}">🚗 Ikuti Jalan (API)</button>
+            </div>
+            <p class="info-instruction" style="font-size:0.85em; color:#666;"><span id="pred-desc">Klik area dalam batas kecamatan untuk prediksi pemukiman.</span></p>
+        `;
+      if (panel) panel.classList.add("active");
+    } else {
+      const instructions = {
+        isochrone: "🕐 Klik peta untuk melihat area jangkauan waktu.",
+        buffer:
+          "⭕ KHUSUS MARKER: Klik ikon Sekolah/RS untuk melihat Service Area.",
+        topN: "🏆 Klik peta untuk 5 fasilitas terdekat.",
+        gap: "⚠️ Klik peta untuk analisis gap.",
+        compare: "⚖️ Klik dua lokasi untuk membandingkan.",
+      };
+      htmlContent = `<p class="info-instruction">${
+        instructions[mode] || "Pilih mode."
+      }</p>`;
+
+      if (panel) panel.classList.remove("active");
+      const mapWrapper = document.querySelector(".map-wrapper");
+      if (mapWrapper) mapWrapper.classList.remove("sidebar-open");
+    }
+
+    if (infoDiv) infoDiv.innerHTML = htmlContent;
+    this.clearAnalysisLayers();
+  },
+
+  setMeasureMethod(method) {
+    this.state.measureMethod = method;
+    this.updateMethodUI(
+      "btn-dist",
+      method,
+      "Titik A lalu Titik B",
+      "mengukur rute"
+    );
+    this.clearAnalysisLayers();
+    this.state.lastClickPoint = null;
+  },
+  setNearestMethod(method) {
+    this.state.nearestMethod = method;
+    this.updateMethodUI(
+      "btn-near",
+      method,
+      "peta",
+      "mencari fasilitas terdekat"
+    );
+  },
+  setPredictionMethod(method) {
+    this.state.predictionMethod = method;
+    this.updateMethodUI(
+      "btn-pred",
+      method,
+      "area dalam batas",
+      "prediksi pemukiman"
+    );
+  },
+
+  updateMethodUI(prefix, method, clickTarget, action) {
+    const btnLine = document.getElementById(`${prefix}-line`);
+    const btnRoad = document.getElementById(`${prefix}-road`);
+    const desc = document.getElementById(`${prefix}-desc`);
+    const activeStyle =
+      "background:#6f42c1; color:white; border-color:#6f42c1;";
+    const inactiveStyle = "background:#fff; color:#333; border-color:#ccc;";
+
+    if (method === "line") {
+      if (btnLine) btnLine.style.cssText += activeStyle;
+      if (btnRoad) btnRoad.style.cssText += inactiveStyle;
+      if (desc)
+        desc.innerText = `Klik ${clickTarget} untuk ${action} (Garis Lurus).`;
+    } else {
+      if (btnLine) btnLine.style.cssText += inactiveStyle;
+      if (btnRoad) btnRoad.style.cssText += activeStyle;
+      if (desc)
+        desc.innerText = `Klik ${clickTarget} untuk ${action} (Jalan Raya/API).`;
+    }
+  },
+
+  setupMapClickHandler() {
+    this.map.on("click", (e) => {
+      if (this.state.currentMode === "buffer") return;
+      this.handleInteraction(e.latlng);
+    });
+
+    this.map.on("popupopen", (e) => {
+      if (!this.state.currentMode) return;
+      const sourceMarker = e.popup._source;
+      if (this.state.analysisLayer.hasLayer(sourceMarker)) return;
+
+      if (
+        [
+          "distance",
+          "nearest",
+          "isochrone",
+          "buffer",
+          "topN",
+          "gap",
+          "compare",
+          "prediction",
+        ].includes(this.state.currentMode)
+      ) {
+        e.popup.removeFrom(this.map);
+        if (sourceMarker && sourceMarker.getLatLng) {
+          setTimeout(() => {
+            this.handleInteraction(sourceMarker.getLatLng());
+          }, 10);
+        }
+      }
+    });
+  },
+
+  handleInteraction(latlng) {
+    if (!this.state.currentMode) return;
+    const panel = document.getElementById("analysis-panel");
+    const mapWrapper = document.querySelector(".map-wrapper");
+
+    // Tutup panel jika bukan mode pemilihan
+    if (
+      !["distance", "nearest", "prediction"].includes(this.state.currentMode)
+    ) {
+      if (panel) panel.classList.remove("active");
+      if (mapWrapper) mapWrapper.classList.remove("sidebar-open");
+    }
+
+    const point = [latlng.lng, latlng.lat];
+
+    switch (this.state.currentMode) {
+      case "nearest":
+        this.findNearestFacility(point, latlng);
+        break;
+      case "isochrone":
+        this.runIsochroneLogic(point, latlng, "time");
+        break;
+      case "buffer":
+        this.runIsochroneLogic(point, latlng, "distance");
+        break;
+      case "distance":
+        this.measureDistance(point, latlng);
+        break;
+      case "topN":
+        this.findTopNearestFacilities(point, latlng);
+        break;
+      case "gap":
+        this.gapAnalysis(point, latlng);
+        break;
+      case "compare":
+        this.compareAccessibility(point, latlng);
+        break;
+      case "prediction":
+        this.predictSettlementGrowth(point, latlng);
+        break;
+    }
+  },
+
+  storeFacilities(facilities) {
+    this.state.allFacilities = facilities;
+  },
+
+  // --- PREDIKSI (Radius 300m, Dual Mode, Warna Warni) ---
+  async predictSettlementGrowth(point, latlng) {
+    this.clearAnalysisLayers();
+    this.state.predictionCache = {
+      center: { lng: point[0], lat: point[1] },
+      facilities: [],
+      lines: [],
+    };
+
+    if (this.state.districtBoundary) {
+      const pt = turf.point(point);
+      let poly = this.state.districtBoundary;
+      if (poly.geometry.type === "LineString") poly = turf.lineToPolygon(poly);
+      if (!turf.booleanPointInPolygon(pt, poly)) {
+        L.circleMarker(latlng, {
+          radius: 8,
+          fillColor: "#666",
+          color: "#fff",
+          fillOpacity: 0.8,
+        })
+          .addTo(this.state.analysisLayer)
+          .bindPopup("Titik Luar Wilayah")
+          .openPopup();
+        this.showResults(
+          `<div class="result-item" style="border-left: 5px solid #666; background:#fff0f0;"><div class="result-details"><div class="result-name" style="color:#d32f2f;">⛔ Di Luar Jangkauan</div><div style="font-size:0.9em; margin-top:5px; color:#444;">Lokasi berada di luar <strong>Batas Kecamatan</strong>.</div></div></div>`,
+          "error"
+        );
+        return;
+      }
+    }
+
+    UIUtils.showLoading();
+
+    const from = turf.point(point);
+    const distances = this.state.allFacilities.map((f) => {
+      const to = turf.point(f.geometry.coordinates);
+      const props = f.properties;
+      const name =
+        props.nama || props.SDN || props.RS || props.KETERANGAN || "Fasilitas";
+      let icon = "🏫";
+      if (
+        name.toLowerCase().includes("rs") ||
+        name.toLowerCase().includes("puskesmas")
+      )
+        icon = "🏥";
+      else if (name.toLowerCase().includes("universitas")) icon = "🎓";
+      return {
+        dist: turf.distance(from, to, { units: "kilometers" }),
+        name: name,
+        icon: icon,
+        coords: f.geometry.coordinates,
+        props: props,
+      };
+    });
+
+    distances.sort((a, b) => a.dist - b.dist);
+    const relevantFacilities = distances
+      .filter((d) => d.dist <= 0.3)
+      .slice(0, 5);
+    if (relevantFacilities.length === 0 && distances.length > 0)
+      relevantFacilities.push(distances[0]);
+
+    this.state.predictionCache.facilities = relevantFacilities;
+
+    const nearest3 = distances.slice(0, 3);
+    const avgDist =
+      nearest3.reduce((sum, item) => sum + item.dist, 0) / nearest3.length;
+    let prediction = {};
+    let color = "";
+
+    if (avgDist < 0.5) {
+      prediction = {
+        probability: "Sangat Tinggi",
+        years: "1 - 2 Tahun",
+        reason:
+          "Aksesibilitas prima (< 500m ke fasilitas). Potensial pemadatan pemukiman.",
+      };
+      color = "#dc3545";
+    } else if (avgDist < 1.5) {
+      prediction = {
+        probability: "Sedang - Tinggi",
+        years: "3 - 5 Tahun",
+        reason:
+          "Lokasi strategis untuk perumahan klaster. Terjangkau dari pusat layanan.",
+      };
+      color = "#fd7e14";
+    } else if (avgDist < 3.0) {
+      prediction = {
+        probability: "Rendah - Sedang",
+        years: "5 - 10 Tahun",
+        reason:
+          "Aksesibilitas menurun. Pertumbuhan lambat, butuh kendaraan pribadi.",
+      };
+      color = "#ffc107";
+    } else {
+      prediction = {
+        probability: "Rendah",
+        years: "> 10 Tahun",
+        reason:
+          "Terisolir dari layanan publik. Cenderung tetap menjadi lahan hijau.",
+      };
+      color = "#28a745";
+    }
+
+    let listHTML = `<ul style="list-style:none; padding:0; margin:0;">`;
+    relevantFacilities.forEach((d) => {
+      listHTML += `<li style="display:flex; justify-content:space-between; padding:6px 0; border-bottom:1px solid #eee; font-size:0.85em;"><span>${
+        d.icon
+      } ${
+        d.name
+      }</span><span style="font-weight:bold; color:#444;">${d.dist.toFixed(
+        2
+      )} km</span></li>`;
+    });
+    listHTML += `</ul>`;
+
+    L.circleMarker(latlng, {
+      radius: 8,
+      fillColor: color,
+      color: "#fff",
+      fillOpacity: 1,
+    })
+      .addTo(this.state.analysisLayer)
+      .bindPopup("Titik Prediksi");
+    L.circle(latlng, {
+      radius: 100,
+      color: color,
+      fillColor: color,
+      fillOpacity: 0.2,
+      dashArray: "5, 10",
+    }).addTo(this.state.analysisLayer);
+
+    this.showResults(`
+          <div class="result-item" style="display:block; border-top: 5px solid ${color};">
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+                  <h4 style="margin:0; color:#333; font-size:15px;">Prediksi Pertumbuhan</h4>
+                  <span style="background:${color}; color:white; padding:4px 10px; border-radius:12px; font-size:0.8em; font-weight:bold;">${prediction.years}</span>
+              </div>
+              <div style="background:#f8f9fa; padding:10px; border-radius:8px; margin-bottom:12px;">
+                  <div style="font-size:0.9em; color:#666;">Potensi Pemukiman Baru:</div>
+                  <div style="font-size:1.4em; font-weight:800; color:${color};">${prediction.probability}</div>
+              </div>
+              <div style="font-size:0.9em; line-height:1.6; color:#444; margin-bottom:15px; text-align:justify;"><strong>Analisis Aksesibilitas:</strong><br>${prediction.reason}</div>
+              <button onclick="AnalysisUtils.togglePredictionVisuals()" style="width:100%; background:#3388ff; color:white; border:none; padding:10px; border-radius:6px; font-weight:600; cursor:pointer;"><span>🔍 Cek Fasilitas Terdekat</span></button>
+              <div id="accessibility-details" style="display:none; margin-top:15px; background:#fff; border:1px solid #eee; border-radius:8px; padding:10px; max-height:250px; overflow-y:auto;">
+                  <div style="margin-bottom:8px; font-size:0.8em; color:#666; font-style:italic;">*Menampilkan fasilitas dalam radius 300 meter.</div>${listHTML}
+              </div>
+          </div>
+      `);
+    UIUtils.hideLoading();
+  },
+
+  async togglePredictionVisuals() {
+    const el = document.getElementById("accessibility-details");
+    const isVisible = el && el.style.display !== "none";
+    const cache = this.state.predictionCache;
+
+    if (el) el.style.display = isVisible ? "none" : "block";
+
+    if (isVisible) {
+      if (cache.lines.length > 0)
+        cache.lines.forEach((line) =>
+          this.state.analysisLayer.removeLayer(line)
+        );
+    } else {
+      if (cache.lines.length > 0) {
+        cache.lines.forEach((line) => this.state.analysisLayer.addLayer(line));
+      } else if (cache.facilities.length > 0) {
+        if (this.state.predictionMethod === "line") {
+          cache.facilities.forEach((fac) => {
+            const lineColor = this.getFacilityColor(fac.name, fac.props);
+            const lineLayer = L.polyline(
+              [
+                [cache.center.lat, cache.center.lng],
+                [fac.coords[1], fac.coords[0]],
+              ],
+              { color: lineColor, weight: 2, opacity: 0.8, dashArray: "5, 5" }
+            ).addTo(this.state.analysisLayer);
+            cache.lines.push(lineLayer);
+          });
+        } else {
+          UIUtils.showLoading();
+          const routePromises = cache.facilities.map(async (fac) => {
+            const lineColor = this.getFacilityColor(fac.name, fac.props);
+            try {
+              const routeData = await RoutingService.getRoute(
+                [cache.center.lng, cache.center.lat],
+                fac.coords,
+                "driving-car"
+              );
+              const lineLayer = L.geoJSON(routeData, {
+                style: {
+                  color: lineColor,
+                  weight: 4,
+                  opacity: 0.8,
+                  lineCap: "round",
+                },
+              }).addTo(this.state.analysisLayer);
+              return lineLayer;
+            } catch (err) {
+              const lineLayer = L.polyline(
+                [
+                  [cache.center.lat, cache.center.lng],
+                  [fac.coords[1], fac.coords[0]],
+                ],
+                {
+                  color: lineColor,
+                  weight: 3,
+                  opacity: 0.6,
+                  dashArray: "5, 10",
+                }
+              ).addTo(this.state.analysisLayer);
+              return lineLayer;
+            }
+          });
+          const newLines = await Promise.all(routePromises);
+          cache.lines = newLines.filter((l) => l !== null);
+          UIUtils.hideLoading();
+        }
+
+        if (cache.lines.length > 0) {
+          const group = new L.featureGroup(cache.lines);
+          this.map.fitBounds(group.getBounds(), { padding: [20, 20] });
+        }
+      }
+    }
+  },
+
+  getFacilityColor(name, props) {
+    let lineColor = "#888";
+    const p = props || {};
+    const n = name.toLowerCase();
+    if (p.RS || n.includes("rs ")) lineColor = "#e74c3c";
+    else if (p.Puskesmas || n.includes("puskesmas")) lineColor = "#3498db";
+    else if (p.Klinik || n.includes("klinik")) lineColor = "#2ecc71";
+    else if (p.Posyandu || n.includes("posyandu")) lineColor = "#f39c12";
+    else if (p.SDN || n.includes("sd ")) lineColor = "#0066cc";
+    else if (p.SMPN || n.includes("smp")) lineColor = "#28a745";
+    else if (p.SMAN || n.includes("sma")) lineColor = "#dc3545";
+    else if (p.Universitas || n.includes("universitas")) lineColor = "#6f42c1";
+    else if (p.Madrasah || n.includes("madrasah")) lineColor = "#fd7e14";
+    return lineColor;
+  },
+
+  // --- UKUR JARAK & TERDEKAT ---
+  async measureDistance(point, latlng) {
+    if (!this.state.lastClickPoint) {
+      this.clearAnalysisLayers();
+      this.state.lastClickPoint = { point, latlng };
+      const m = L.circleMarker(latlng, {
+        radius: 7,
+        color: "#fff",
+        weight: 2,
+        fillColor: "#3388ff",
+        fillOpacity: 1,
+      }).addTo(this.state.analysisLayer);
+      m.bindPopup("<b>Titik Awal</b>").openPopup();
+    } else {
+      const startPoint = this.state.lastClickPoint;
+      const m2 = L.circleMarker(latlng, {
+        radius: 7,
+        color: "#fff",
+        weight: 2,
+        fillColor: "#dc3545",
+        fillOpacity: 1,
+      }).addTo(this.state.analysisLayer);
+      m2.bindPopup("<b>Titik Tujuan</b>").openPopup();
+
+      if (this.state.measureMethod === "line") {
+        const straightDist = turf.distance(
+          turf.point(startPoint.point),
+          turf.point(point)
+        );
+        L.polyline([startPoint.latlng, latlng], {
+          color: "#3388ff",
+          weight: 3,
+          dashArray: "10, 10",
+          opacity: 0.8,
+        }).addTo(this.state.analysisLayer);
+        this.showResults(
+          `<div class="result-item" style="border-left: 6px solid #3388ff"><div class="result-icon" style="background:#e3f2fd; color:#0066cc;">📏</div><div class="result-details"><div class="result-name">Jarak Garis Lurus</div><div class="result-distance" style="font-size: 1.6em; color: #333; font-weight:800;">${straightDist.toFixed(
+            2
+          )} <span style="font-size:0.6em; color:#666">km</span></div><div style="margin-top:8px; display:flex; gap:10px; font-size:0.8em;"><span style="color:#3388ff;">● Awal (Biru)</span><span style="color:#333;">⇢</span><span style="color:#dc3545;">● Akhir (Merah)</span></div></div></div>`
+        );
+        this.state.lastClickPoint = null;
+      } else {
+        UIUtils.showLoading();
+        try {
+          const routeData = await RoutingService.getRoute(
+            startPoint.point,
+            point,
+            "driving-car"
+          );
+          const summary = routeData.features[0].properties.summary;
+          const distanceKm = (summary.distance / 1000).toFixed(2);
+          L.geoJSON(routeData, {
+            style: { color: "#3388ff", weight: 5, opacity: 0.8 },
+          }).addTo(this.state.analysisLayer);
+          this.showResults(
+            `<div class="result-item"><div class="result-icon" style="background:#e3f2fd; color:#0066cc;">📏</div><div class="result-details"><div class="result-name">Pengukuran Rute Jalan</div><div class="result-distance" style="font-size: 1.6em; color: #333; font-weight:800;">${distanceKm} <span style="font-size:0.6em; color:#666">km</span></div><div style="margin-top:8px; display:flex; gap:10px; font-size:0.8em;"><span style="color:#3388ff;">● Awal (Biru)</span><span style="color:#333;">⇢</span><span style="color:#dc3545;">● Akhir (Merah)</span></div></div></div>`
+          );
+        } catch (error) {
+          this.showResults("Gagal rute API", "error");
+        } finally {
+          this.state.lastClickPoint = null;
+          UIUtils.hideLoading();
+        }
+      }
+    }
+  },
+
+  async findNearestFacility(point, latlng) {
+    this.clearAnalysisLayers();
+    if (this.state.nearestMethod === "road") UIUtils.showLoading();
+    const userMarker = L.circleMarker(latlng, {
+      radius: 8,
+      fillColor: "#333",
+      color: "#fff",
+      weight: 2,
+      opacity: 1,
+      fillOpacity: 0.8,
+    }).addTo(this.state.analysisLayer);
+    userMarker.bindPopup("Lokasi Anda").openPopup();
+    const from = turf.point(point);
+    let nearestCandidate = null;
+    let minDist = Infinity;
+    this.state.allFacilities.forEach((f) => {
+      if (f.geometry.type === "Point") {
+        const d = turf.distance(from, turf.point(f.geometry.coordinates));
+        if (d < minDist) {
+          minDist = d;
+          nearestCandidate = f;
+        }
+      }
+    });
+    if (!nearestCandidate) {
+      this.showResults("Tidak ada fasilitas.", "error");
+      UIUtils.hideLoading();
+      return;
+    }
+    const fLatLng = [
+      nearestCandidate.geometry.coordinates[1],
+      nearestCandidate.geometry.coordinates[0],
+    ];
+    const name = nearestCandidate.properties.nama || "Fasilitas";
+    if (this.state.nearestMethod === "line") {
+      L.polyline([latlng, fLatLng], {
+        color: "#ff7800",
+        weight: 3,
+        dashArray: "10, 10",
+      }).addTo(this.state.analysisLayer);
+      L.circleMarker(fLatLng, {
+        radius: 10,
+        fillColor: "#ff7800",
+        color: "#fff",
+        fillOpacity: 1,
+      }).addTo(this.state.analysisLayer);
+      this.showResults(
+        `<div class="result-item" style="border-left: 6px solid #ff7800"><div class="result-details"><div class="result-name">${name}</div><div class="result-distance">${minDist.toFixed(
+          2
+        )} km</div><div class="result-info" style="margin-top:5px; font-size:0.85em; color:#666;">Jarak Garis Lurus (Euclidean)</div></div></div>`
+      );
+      this.map.fitBounds(L.latLngBounds([latlng, fLatLng]), {
+        padding: [50, 50],
+      });
+      UIUtils.hideLoading();
+    } else {
+      try {
+        const routeData = await RoutingService.getRoute(
+          point,
+          nearestCandidate.geometry.coordinates
+        );
+        const summary = routeData.features[0].properties.summary;
+        const km = (summary.distance / 1000).toFixed(2);
+        const minutes = Math.round((summary.duration * 1.8) / 60);
+        const color = RoutingService.getTimeColor(summary.duration * 1.8);
+        let status =
+          minutes <= 10
+            ? "✅ Sangat Dekat"
+            : minutes <= 30
+            ? "⚠️ Menengah"
+            : "⛔ Jauh";
+        L.geoJSON(routeData, {
+          style: { color: color, weight: 6, opacity: 0.8 },
+        }).addTo(this.state.analysisLayer);
+        L.circleMarker(fLatLng, {
+          radius: 10,
+          fillColor: color,
+          color: "#fff",
+          fillOpacity: 1,
+        }).addTo(this.state.analysisLayer);
+        this.showResults(
+          `<div class="result-item" style="border-left: 6px solid ${color}"><div class="result-details"><div class="result-name">${name}</div><div class="result-distance" style="color:${color}; font-weight:bold; font-size:1.3em;">${minutes} Menit</div><div class="result-time">Jarak: ${km} km</div><div class="result-info" style="margin-top:5px;">${status}</div></div></div>`
+        );
+        this.map.fitBounds(L.latLngBounds([latlng, fLatLng]), {
+          padding: [50, 50],
+        });
+      } catch (e) {
+        console.error(e);
+        this.showResults("Gagal rute API.", "error");
+      } finally {
+        UIUtils.hideLoading();
+      }
+    }
+  },
+
+  async runIsochroneLogic(point, latlng, type) {
+    this.clearAnalysisLayers();
+    this.state.currentIsochroneLayer = null;
+    UIUtils.showLoading();
+    const centerMarker = L.circleMarker(latlng, {
+      radius: 8,
+      fillColor: "#6f42c1",
+      color: "#fff",
+      fillOpacity: 1,
+    }).addTo(this.state.analysisLayer);
+    try {
+      let ranges, labels, sublabels, title;
+      if (type === "time") {
+        title = "Analisis Jangkauan Waktu";
+        const tf = 1.5;
+        ranges = [
+          Math.round(600 / tf),
+          Math.round(1200 / tf),
+          Math.round(1800 / tf),
+        ];
+        labels = ["0 - 10 Mnt", "10 - 20 Mnt", "20 - 30 Mnt"];
+        sublabels = ["Sangat Dekat", "Dekat", "Jauh"];
+      } else {
+        title = "Service Area (Jarak)";
+        ranges = [500, 1000, 1500];
+        labels = ["0 - 0.5 KM", "0.5 - 1 KM", "1 - 1.5 KM"];
+        sublabels = ["Jalan Kaki", "Menengah", "Kendaraan"];
+      }
+      const data = await RoutingService.getIsochrones(
+        point,
+        "driving-car",
+        ranges,
+        type
+      );
+      data.features.sort((a, b) => a.properties.value - b.properties.value);
+      const processedFeatures = [];
+      if (data.features[0]) {
+        data.features[0].properties.rangeType = "green";
+        processedFeatures.push(data.features[0]);
+      }
+      if (data.features[1]) {
+        try {
+          const diff = turf.difference(data.features[1], data.features[0]);
+          if (diff) {
+            diff.properties = {
+              ...data.features[1].properties,
+              rangeType: "yellow",
+            };
+            processedFeatures.push(diff);
+          }
+        } catch (e) {}
+      }
+      if (data.features[2]) {
+        try {
+          const diff = turf.difference(data.features[2], data.features[1]);
+          if (diff) {
+            diff.properties = {
+              ...data.features[2].properties,
+              rangeType: "red",
+            };
+            processedFeatures.push(diff);
+          }
+        } catch (e) {}
+      }
+      this.state.isochroneData = {
+        type: "FeatureCollection",
+        features: processedFeatures,
+      };
+      this.state.isochroneRanges = ranges;
+      this.state.activeIsochroneFilter = null;
+      this.renderIsochroneLayer("all");
+      const btnStyle =
+        "cursor:pointer; padding:10px 5px; border-radius:8px; text-align:center; font-weight:bold; transition:all 0.2s; box-shadow: 0 2px 5px rgba(0,0,0,0.2); border: 3px solid transparent; flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px;";
+      this.showResults(`
+            <div class="isochrone-results"><h4 style="margin-bottom:15px;">${title}</h4><div style="display:flex; gap:8px; justify-content: space-between;"><div id="btn-iso-green" onclick="AnalysisUtils.filterIsochrone('green')" style="${btnStyle} background-color:#28a745; color:white;"><div style="font-size:0.9em;">${labels[0]}</div><div style="font-size:0.65em; font-weight:normal;">${sublabels[0]}</div></div><div id="btn-iso-yellow" onclick="AnalysisUtils.filterIsochrone('yellow')" style="${btnStyle} background-color:#ffc107; color:#333;"><div style="font-size:0.9em;">${labels[1]}</div><div style="font-size:0.65em; font-weight:normal;">${sublabels[1]}</div></div><div id="btn-iso-red" onclick="AnalysisUtils.filterIsochrone('red')" style="${btnStyle} background-color:#dc3545; color:white;"><div style="font-size:0.9em;">${labels[2]}</div><div style="font-size:0.65em; font-weight:normal;">${sublabels[2]}</div></div></div></div>
+          `);
+    } catch (e) {
+      this.showResults("Gagal isochrone", "error");
+    } finally {
+      UIUtils.hideLoading();
+    }
+  },
+
+  filterIsochrone(type) {
+    if (this.state.activeIsochroneFilter === type) {
+      this.state.activeIsochroneFilter = null;
+      this.renderIsochroneLayer("all");
+      this.updateFilterUI(null);
+    } else {
+      this.state.activeIsochroneFilter = type;
+      this.renderIsochroneLayer(type);
+      this.updateFilterUI(type);
+    }
+  },
+  updateFilterUI(activeType) {
+    const types = ["green", "yellow", "red"];
+    const bgColors = { green: "#28a745", yellow: "#ffc107", red: "#dc3545" };
+    const textColors = { green: "white", yellow: "#333", red: "white" };
+    const activeBorderColors = { green: "white", yellow: "#333", red: "white" };
+    const baseStyle =
+      "cursor:pointer; padding:10px 5px; border-radius:8px; text-align:center; font-weight:bold; transition:all 0.2s; box-shadow: 0 2px 5px rgba(0,0,0,0.2); flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px;";
+    types.forEach((t) => {
+      const btn = document.getElementById(`btn-iso-${t}`);
+      if (btn) {
+        let style =
+          baseStyle +
+          `background-color:${bgColors[t]}; color:${textColors[t]};`;
+        if (t === activeType)
+          style += `border: 3px solid ${activeBorderColors[t]}; transform: scale(1.05); box-shadow: 0 4px 8px rgba(0,0,0,0.3); opacity: 1;`;
+        else if (activeType !== null)
+          style += `border: 3px solid transparent; transform: scale(0.95); opacity: 0.5;`;
+        else
+          style += `border: 3px solid transparent; opacity: 1; transform: scale(1);`;
+        btn.style.cssText = style;
+      }
+    });
+  },
+  renderIsochroneLayer(filterType) {
+    if (this.state.currentIsochroneLayer) {
+      this.state.analysisLayer.removeLayer(this.state.currentIsochroneLayer);
+      this.state.currentIsochroneLayer = null;
+    }
+    if (!this.state.isochroneData) return;
+    const layer = L.geoJSON(this.state.isochroneData, {
+      filter: (feature) => {
+        if (filterType === "all") return true;
+        return feature.properties.rangeType === filterType;
+      },
+      style: (feature) => {
+        const type = feature.properties.rangeType;
+        let c = "#dc3545";
+        let opacity = 0.5;
+        if (type === "green") c = "#28a745";
+        else if (type === "yellow") c = "#ffc107";
+        else if (type === "red") c = "#dc3545";
+        if (filterType !== "all") opacity = 0.7;
+        return { color: c, weight: 1, fillOpacity: opacity, fillColor: c };
+      },
+    });
+    this.state.currentIsochroneLayer = layer;
+    this.state.analysisLayer.addLayer(layer);
+    if (layer.getBounds().isValid()) this.map.fitBounds(layer.getBounds());
+  },
+  clearAnalysisLayers() {
+    if (this.state.analysisLayer) this.state.analysisLayer.clearLayers();
+    this.state.currentIsochroneLayer = null;
+  },
+  clearAnalysis() {
+    this.clearAnalysisLayers();
+    this.state.lastClickPoint = null;
+    const panel = document.getElementById("analysis-panel");
+    const resultsDiv = document.getElementById("analysis-results");
+    const infoDiv = document.getElementById("analysis-info");
+    if (panel) {
+      panel.classList.remove("has-results");
+      panel.classList.add("active");
+      const mapWrapper = document.querySelector(".map-wrapper");
+      if (mapWrapper) mapWrapper.classList.add("sidebar-open");
+    }
+    if (resultsDiv) resultsDiv.style.display = "none";
+    if (infoDiv) infoDiv.style.display = "block";
+  },
+  showResults(content, type = "success") {
+    const panel = document.getElementById("analysis-panel");
+    const resultsDiv = document.getElementById("analysis-results");
+    const resultsContent = document.getElementById("results-content");
+    if (resultsDiv && resultsContent) {
+      resultsDiv.style.display = "block";
+      resultsContent.innerHTML = content;
+      resultsContent.className = `results-content ${type}`;
+      if (panel) {
+        panel.classList.add("has-results");
+        panel.classList.add("active");
+        const mapWrapper = document.querySelector(".map-wrapper");
+        if (mapWrapper) mapWrapper.classList.add("sidebar-open");
+      }
+    }
+  },
+  findTopNearestFacilities(point, latlng) {
+    this.showResults("Fitur Top 5 belum update API.", "info");
+  },
+  gapAnalysis(point, latlng) {
+    this.showResults("Fitur Gap belum update API.", "info");
+  },
+  compareAccessibility(point, latlng) {
+    this.showResults("Fitur Compare belum update API.", "info");
+  },
 };
 
-// Export for use in other modules
-if (typeof module !== 'undefined' && module.exports) {
-    module.exports = AnalysisUtils;
-}
+if (typeof module !== "undefined" && module.exports)
+  module.exports = AnalysisUtils;

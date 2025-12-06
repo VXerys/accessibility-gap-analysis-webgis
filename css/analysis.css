@@ -1,694 +1,282 @@
 /**
- * Analysis Panel Styles
- * Styling for spatial analysis controls and results
+ * Analysis Panel Styles - FIXED SIDEBAR LAYOUT
+ * Posisi: Terkunci di antara Header dan Footer
  */
 
-/* Analysis Toggle Button */
+/* --- 1. TOMBOL TOGGLE (Kiri Bawah) --- */
 .analysis-toggle {
-    position: fixed;
-    bottom: 30px;
-    left: 30px;
-    background: linear-gradient(135deg, #6f42c1, #5a32a3);
-    color: white;
-    border: none;
-    border-radius: 12px;
-    padding: 12px 20px;
-    font-family: 'Poppins', sans-serif;
-    font-size: 14px;
-    font-weight: 600;
-    cursor: pointer;
-    box-shadow: 0 4px 12px rgba(111, 66, 193, 0.3);
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    z-index: 999;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: fixed;
+  /* Letakkan tombol sedikit di atas footer */
+  bottom: 90px;
+  left: 20px;
+
+  background: linear-gradient(135deg, #6366f1 0%, #a855f7 100%);
+  color: white;
+  border: none;
+  border-radius: 50px;
+  padding: 12px 24px;
+  font-family: "Poppins", sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+
+  /* Shadow & Efek */
+  box-shadow: 0 10px 25px -5px rgba(99, 102, 241, 0.5);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+
+  display: flex;
+  align-items: center;
+  gap: 10px;
+
+  /* Z-Index tinggi agar selalu terlihat */
+  z-index: 2000;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .analysis-toggle:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 6px 16px rgba(111, 66, 193, 0.4);
-    background: linear-gradient(135deg, #7952cc, #6339b8);
+  transform: translateY(-4px) scale(1.02);
+  box-shadow: 0 20px 25px -5px rgba(99, 102, 241, 0.4);
+  background: linear-gradient(135deg, #4f46e5 0%, #9333ea 100%);
 }
 
 .analysis-toggle:active {
-    transform: translateY(0);
+  transform: scale(0.95);
 }
 
-.analysis-toggle .toggle-icon {
-    font-size: 18px;
-}
-
-.analysis-toggle .toggle-text {
-    font-weight: 600;
-}
-
-/* Analysis Panel Container */
+/* --- 2. PANEL ANALISIS (SIDEBAR) --- */
 .analysis-panel {
-    position: fixed;
-    bottom: -100%;
-    left: 0;
-    right: 0;
-    background: linear-gradient(to bottom, #ffffff, #f8f9fa);
-    border-top-left-radius: 24px;
-    border-top-right-radius: 24px;
-    box-shadow: 0 -4px 24px rgba(0, 0, 0, 0.15);
-    z-index: 998;
-    max-height: 70vh;
-    transition: bottom 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-    overflow: hidden;
+  /* Gunakan Fixed agar tidak ikut scroll halaman */
+  position: fixed;
+
+  /* KUNCI POSISI VERTIKAL */
+  top: 80px; /* Tepat di bawah Header (asumsi tinggi header 80px) */
+  bottom: 60px; /* Tepat di atas Footer (asumsi tinggi footer 60px) */
+  left: 0;
+
+  /* Ukuran Lebar */
+  width: 400px;
+  height: auto; /* Tinggi otomatis mengisi ruang top-bottom */
+
+  background: #ffffff;
+  box-shadow: 5px 0 25px rgba(0, 0, 0, 0.1);
+
+  /* Z-Index di bawah Header/Footer tapi di atas Peta */
+  z-index: 1500;
+
+  /* Animasi Masuk/Keluar */
+  transform: translateX(-100%);
+  transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+
+  /* Layout Flex untuk Header vs Konten */
+  display: flex;
+  flex-direction: column;
+
+  border-right: 1px solid #f3f4f6;
+  border-top: 1px solid #f3f4f6;
+
+  /* Sedikit rounded di sudut kanan */
+  border-top-right-radius: 12px;
+  border-bottom-right-radius: 12px;
 }
 
+/* State saat panel terbuka */
 .analysis-panel.active {
-    bottom: 0;
+  transform: translateX(0);
 }
 
-/* Analysis Header */
+/* --- BAGIAN HEADER PANEL --- */
 .analysis-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 20px 24px;
-    background: linear-gradient(135deg, #6f42c1, #5a32a3);
-    border-top-left-radius: 24px;
-    border-top-right-radius: 24px;
+  /* Warna Header Panel */
+  background: linear-gradient(to right, #4f46e5, #7c3aed);
+  padding: 16px 24px;
+
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  color: white;
+
+  /* Agar header tidak mengecil */
+  flex-shrink: 0;
+
+  border-top-right-radius: 12px;
 }
 
 .analysis-title {
-    margin: 0;
-    font-size: 18px;
-    font-weight: 700;
-    color: white;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-}
-
-.analysis-icon {
-    font-size: 24px;
+  margin: 0;
+  font-size: 16px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 10px;
 }
 
 .analysis-close {
-    background: rgba(255, 255, 255, 0.2);
-    border: none;
-    color: white;
-    width: 32px;
-    height: 32px;
-    border-radius: 50%;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 18px;
-    transition: all 0.3s ease;
+  background: rgba(255, 255, 255, 0.2);
+  border: none;
+  color: white;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  transition: background 0.2s;
 }
 
 .analysis-close:hover {
-    background: rgba(255, 255, 255, 0.3);
-    transform: rotate(90deg);
+  background: rgba(255, 255, 255, 0.4);
+  transform: rotate(90deg);
 }
 
-/* Analysis Content */
+/* --- BAGIAN ISI KONTEN (SCROLLABLE) --- */
 .analysis-content {
-    padding: 24px;
-    max-height: calc(70vh - 80px);
-    overflow-y: auto;
+  padding: 20px;
+
+  /* KUNCI SCROLL: Hanya bagian ini yang bisa di-scroll */
+  overflow-y: auto;
+  flex: 1; /* Mengisi sisa ruang */
+
+  /* Scrollbar cantik */
+  scrollbar-width: thin;
+  scrollbar-color: #cbd5e1 transparent;
 }
 
-/* Analysis Modes */
+.analysis-content::-webkit-scrollbar {
+  width: 6px;
+}
+.analysis-content::-webkit-scrollbar-thumb {
+  background-color: #cbd5e1;
+  border-radius: 6px;
+}
+
+/* --- GRID MENU UTAMA --- */
 .analysis-modes {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-    gap: 12px;
-    margin-bottom: 24px;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+  margin-bottom: 20px;
 }
 
 .analysis-mode-btn {
-    background: white;
-    border: 2px solid #e9ecef;
-    border-radius: 12px;
-    padding: 16px 12px;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 8px;
-    font-family: 'Poppins', sans-serif;
+  background: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 16px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  color: #4b5563;
 }
 
 .analysis-mode-btn:hover {
-    border-color: #6f42c1;
-    background: linear-gradient(135deg, rgba(111, 66, 193, 0.05), rgba(90, 50, 163, 0.05));
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(111, 66, 193, 0.15);
+  border-color: #8b5cf6;
+  background: #f5f3ff;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
 }
 
 .analysis-mode-btn.active {
-    border-color: #6f42c1;
-    background: linear-gradient(135deg, #6f42c1, #5a32a3);
-    color: white;
+  background: #f5f3ff;
+  border-color: #7c3aed;
+  color: #7c3aed;
+  box-shadow: 0 0 0 2px rgba(124, 58, 237, 0.1);
 }
 
 .mode-icon {
-    font-size: 28px;
+  font-size: 24px;
 }
-
 .mode-text {
-    font-size: 13px;
-    font-weight: 600;
-    text-align: center;
+  font-size: 13px;
+  font-weight: 600;
 }
 
-/* Analysis Info */
+/* Info Box */
 .analysis-info {
-    background: linear-gradient(135deg, #e3f2fd, #bbdefb);
-    border-left: 4px solid #2196F3;
-    border-radius: 8px;
-    padding: 16px;
-    margin-bottom: 20px;
+  background: #eff6ff;
+  border: 1px solid #bfdbfe;
+  border-radius: 8px;
+  padding: 12px;
+  margin-bottom: 20px;
+  font-size: 0.9em;
+  color: #1e40af;
+  line-height: 1.5;
 }
-
 .info-instruction {
-    margin: 0;
-    font-size: 14px;
-    color: #1976D2;
-    line-height: 1.5;
+  margin: 0;
 }
 
-/* Analysis Results */
+/* --- HASIL ANALISIS --- */
 .analysis-results {
-    margin-top: 20px;
+  margin-top: 0;
+  animation: fadeIn 0.3s ease;
 }
 
 .results-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 16px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+  padding-bottom: 10px;
+  border-bottom: 2px solid #f1f5f9;
 }
 
 .results-title {
-    margin: 0;
-    font-size: 16px;
-    font-weight: 700;
-    color: #2c3e50;
+  font-size: 15px;
+  font-weight: 700;
+  color: #334155;
 }
 
 .results-clear {
-    background: linear-gradient(135deg, #dc3545, #bd2130);
-    color: white;
-    border: none;
-    border-radius: 8px;
-    padding: 8px 16px;
-    font-family: 'Poppins', sans-serif;
-    font-size: 12px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.3s ease;
+  background: #ef4444;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  padding: 6px 12px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
 }
-
 .results-clear:hover {
-    background: linear-gradient(135deg, #c82333, #a71d2a);
-    transform: translateY(-1px);
-    box-shadow: 0 2px 8px rgba(220, 53, 69, 0.3);
+  background: #dc2626;
 }
 
-.results-content {
-    background: white;
-    border-radius: 12px;
-    padding: 16px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-}
-
-/* Result Item */
+/* Kartu Hasil */
 .result-item {
-    display: flex;
-    gap: 16px;
-    align-items: flex-start;
+  background: white;
+  border-radius: 12px;
+  padding: 16px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  border: 1px solid #e2e8f0;
+  margin-bottom: 12px;
 }
 
-.result-icon {
-    font-size: 36px;
-    flex-shrink: 0;
+/* --- LOGIKA TAMPILAN --- */
+/* Saat ada hasil, sembunyikan menu */
+.analysis-panel.has-results .analysis-modes,
+.analysis-panel.has-results .analysis-info {
+  display: none !important;
 }
-
-.result-details {
-    flex: 1;
-}
-
-.result-name {
-    font-size: 16px;
-    font-weight: 700;
-    color: #2c3e50;
-    margin-bottom: 4px;
-}
-
-.result-type {
-    font-size: 13px;
-    color: #6c757d;
-    margin-bottom: 8px;
-}
-
-.result-distance {
-    font-size: 14px;
-    color: #495057;
-    margin-bottom: 4px;
-}
-
-.result-time {
-    font-size: 13px;
-    color: #6c757d;
-    margin-bottom: 2px;
-}
-
-.result-info {
-    margin-top: 12px;
-    padding: 12px;
-    background: #f8f9fa;
-    border-radius: 8px;
-    font-size: 13px;
-    line-height: 1.5;
-}
-
-/* Buffer Statistics */
-.buffer-stats {
-    margin-top: 12px;
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-}
-
-.buffer-stat {
-    padding: 10px 12px;
-    background: #f8f9fa;
-    border-radius: 6px;
-    padding-left: 16px;
-    font-size: 14px;
-}
-
-/* Distance Label (on map) */
-.distance-label {
-    background: none !important;
-    border: none !important;
+.analysis-panel.has-results .analysis-results {
+  display: block !important;
 }
 
 /* Mobile Responsiveness */
 @media (max-width: 768px) {
-    .analysis-toggle {
-        bottom: 20px;
-        left: 20px;
-        padding: 10px 16px;
-        font-size: 13px;
-    }
-
-    .analysis-toggle .toggle-icon {
-        font-size: 16px;
-    }
-
-    .analysis-panel {
-        max-height: 80vh;
-    }
-
-    .analysis-header {
-        padding: 16px 20px;
-    }
-
-    .analysis-title {
-        font-size: 16px;
-    }
-
-    .analysis-icon {
-        font-size: 20px;
-    }
-
-    .analysis-content {
-        padding: 20px;
-        max-height: calc(80vh - 70px);
-    }
-
-    .analysis-modes {
-        grid-template-columns: 1fr;
-        gap: 10px;
-    }
-
-    .analysis-mode-btn {
-        flex-direction: row;
-        justify-content: flex-start;
-        padding: 14px 16px;
-        gap: 12px;
-    }
-
-    .mode-icon {
-        font-size: 24px;
-    }
-
-    .mode-text {
-        font-size: 14px;
-        text-align: left;
-    }
-
-    .result-icon {
-        font-size: 28px;
-    }
-
-    .result-name {
-        font-size: 15px;
-    }
-
-    .buffer-stats {
-        gap: 6px;
-    }
-
-    .buffer-stat {
-        padding: 8px 10px;
-        font-size: 13px;
-    }
+  .analysis-panel {
+    width: 100%;
+    top: 60px; /* Header mobile biasanya lebih kecil */
+    bottom: 0; /* Di mobile boleh menutupi footer */
+    border-radius: 0;
+  }
+  .analysis-toggle {
+    bottom: 80px;
+    left: auto;
+    right: 20px;
+  }
 }
-
-@media (max-width: 480px) {
-    .analysis-toggle {
-        bottom: 15px;
-        left: 15px;
-        padding: 8px 14px;
-    }
-
-    .analysis-toggle .toggle-text {
-        display: none;
-    }
-
-    .analysis-header {
-        padding: 14px 16px;
-    }
-
-    .analysis-title {
-        font-size: 15px;
-    }
-
-    .analysis-content {
-        padding: 16px;
-    }
-
-    .analysis-mode-btn {
-        padding: 12px 14px;
-    }
-
-    .mode-icon {
-        font-size: 22px;
-    }
-
-    .mode-text {
-        font-size: 13px;
-    }
-}
-
-/* Scrollbar Styling */
-.analysis-content::-webkit-scrollbar {
-    width: 6px;
-}
-
-.analysis-content::-webkit-scrollbar-track {
-    background: #f1f1f1;
-    border-radius: 10px;
-}
-
-.analysis-content::-webkit-scrollbar-thumb {
-    background: linear-gradient(135deg, #6f42c1, #5a32a3);
-    border-radius: 10px;
-}
-
-.analysis-content::-webkit-scrollbar-thumb:hover {
-    background: linear-gradient(135deg, #7952cc, #6339b8);
-}
-
-/* ================================================
-   ENHANCED ANALYSIS FEATURES STYLES
-   ================================================ */
-
-/* Multi-Facility Results */
-.multi-facility-results {
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-}
-
-.multi-facility-results .result-item {
-    background: white;
-    border-radius: 8px;
-    padding: 12px;
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
-    transition: all 0.3s ease;
-    border-left-width: 4px;
-    border-left-style: solid;
-}
-
-.multi-facility-results .result-item:hover {
-    transform: translateX(4px);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
-}
-
-.result-rank {
-    font-size: 20px;
-    font-weight: 800;
-    color: #6f42c1;
-    min-width: 35px;
-}
-
-/* Numbered Marker (on map) */
-.numbered-marker {
-    background: none !important;
-    border: none !important;
-}
-
-/* Isochrone Results */
-.isochrone-results {
-    background: white;
-    border-radius: 12px;
-    padding: 16px;
-}
-
-.isochrone-results h4 {
-    margin: 0 0 8px 0;
-    font-size: 16px;
-    font-weight: 700;
-    color: #2c3e50;
-}
-
-.zone-stat {
-    padding: 10px;
-    margin-bottom: 8px;
-    background: #f8f9fa;
-    border-radius: 6px;
-    transition: all 0.3s ease;
-}
-
-.zone-stat:hover {
-    background: #e9ecef;
-    transform: translateX(4px);
-}
-
-.accessibility-assessment {
-    animation: slideIn 0.5s ease;
-}
-
-.accessibility-assessment h5 {
-    font-size: 14px;
-    font-weight: 700;
-    color: #495057;
-}
-
-/* Gap Analysis Results */
-.gap-analysis-results {
-    background: white;
-    border-radius: 12px;
-    padding: 16px;
-}
-
-.gap-status {
-    text-align: center;
-    font-size: 18px;
-    font-weight: 800;
-    letter-spacing: 0.5px;
-    animation: fadeInScale 0.5s ease;
-}
-
-.gap-metrics,
-.facility-breakdown {
-    margin-top: 12px;
-}
-
-.metric-row,
-.type-row {
-    transition: all 0.3s ease;
-}
-
-.metric-row:hover,
-.type-row:hover {
-    background: #e9ecef !important;
-}
-
-.recommendations {
-    animation: slideIn 0.5s ease 0.2s both;
-}
-
-.recommendations h5 {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-}
-
-/* Comparison Results */
-.comparison-results {
-    background: white;
-    border-radius: 12px;
-    padding: 16px;
-}
-
-.comparison-results h4 {
-    margin: 0 0 8px 0;
-    font-size: 16px;
-    font-weight: 700;
-    color: #2c3e50;
-}
-
-/* Enhanced Grid Layout for Buttons */
-@media (min-width: 769px) {
-    .analysis-modes {
-        grid-template-columns: repeat(4, 1fr);
-    }
-}
-
-@media (min-width: 1200px) {
-    .analysis-modes {
-        grid-template-columns: repeat(4, 1fr);
-    }
-}
-
-/* Animations */
-@keyframes slideIn {
-    from {
-        opacity: 0;
-        transform: translateY(10px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-
-@keyframes fadeInScale {
-    from {
-        opacity: 0;
-        transform: scale(0.95);
-    }
-    to {
-        opacity: 1;
-        transform: scale(1);
-    }
-}
-
-/* Enhanced Result Info Styling */
-.result-info p {
-    margin: 0;
-    line-height: 1.6;
-}
-
-/* Styled Lists in Results */
-.results-content ul {
-    margin: 8px 0;
-    padding-left: 20px;
-    list-style: none;
-}
-
-.results-content ul li {
-    margin-bottom: 6px;
-    padding-left: 20px;
-    position: relative;
-}
-
-.results-content ul li:before {
-    content: "▸";
-    position: absolute;
-    left: 0;
-    color: #6f42c1;
-    font-weight: bold;
-}
-
-/* Enhanced Mobile Responsiveness for New Features */
-@media (max-width: 768px) {
-    .multi-facility-results .result-item {
-        padding: 10px;
-    }
-
-    .result-rank {
-        font-size: 18px;
-        min-width: 30px;
-    }
-
-    .gap-status {
-        font-size: 16px;
-        padding: 10px;
-    }
-
-    .isochrone-results,
-    .gap-analysis-results,
-    .comparison-results {
-        padding: 14px;
-    }
-
-    .zone-stat {
-        padding: 8px;
-        font-size: 13px;
-    }
-}
-
-@media (max-width: 480px) {
-    .analysis-modes {
-        grid-template-columns: repeat(2, 1fr);
-    }
-
-    .analysis-mode-btn {
-        flex-direction: column;
-        padding: 12px 8px;
-    }
-
-    .mode-text {
-        font-size: 11px;
-    }
-
-    .gap-status {
-        font-size: 14px;
-        padding: 8px;
-    }
-
-    .comparison-results h4,
-    .isochrone-results h4,
-    .gap-analysis-results h4 {
-        font-size: 14px;
-    }
-}
-
-/* Tooltip Enhancement */
-.analysis-mode-btn[title]:hover::after {
-    content: attr(title);
-    position: absolute;
-    bottom: 100%;
-    left: 50%;
-    transform: translateX(-50%);
-    background: rgba(0, 0, 0, 0.85);
-    color: white;
-    padding: 6px 10px;
-    border-radius: 6px;
-    font-size: 11px;
-    white-space: nowrap;
-    margin-bottom: 8px;
-    z-index: 1000;
-    pointer-events: none;
-    animation: fadeIn 0.2s ease;
-}
-
-@keyframes fadeIn {
-    from { opacity: 0; }
-    to { opacity: 1; }
-}
-
