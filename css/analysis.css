@@ -28,7 +28,7 @@
   align-items: center;
   gap: 10px;
 
-  /* Z-Index tinggi agar selalu terlihat */
+  /* Z-Index tinggi agar selalu terlihat di atas peta */
   z-index: 2000;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
@@ -45,23 +45,27 @@
 
 /* --- 2. PANEL ANALISIS (SIDEBAR) --- */
 .analysis-panel {
-  /* Gunakan Fixed agar tidak ikut scroll halaman */
+  /* GUNAKAN FIXED AGAR TIDAK IKUT SCROLL HALAMAN */
   position: fixed;
 
   /* KUNCI POSISI VERTIKAL */
-  top: 80px; /* Tepat di bawah Header (asumsi tinggi header 80px) */
-  bottom: 60px; /* Tepat di atas Footer (asumsi tinggi footer 60px) */
+  /* Sesuaikan top dengan tinggi header Anda */
+  top: 100px; 
+  /* Sesuaikan bottom agar tidak menabrak footer jika perlu, atau biarkan 0 untuk full height */
+  bottom: 20px; 
   left: 0;
 
   /* Ukuran Lebar */
   width: 400px;
-  height: auto; /* Tinggi otomatis mengisi ruang top-bottom */
+  
+  /* Pastikan tinggi max tidak melebihi viewport */
+  max-height: calc(100vh - 120px); 
 
   background: #ffffff;
-  box-shadow: 5px 0 25px rgba(0, 0, 0, 0.1);
+  box-shadow: 5px 0 25px rgba(0, 0, 0, 0.15);
 
-  /* Z-Index di bawah Header/Footer tapi di atas Peta */
-  z-index: 1500;
+  /* Z-Index di bawah Modal tapi di atas Peta dan Elemen lain */
+  z-index: 2000;
 
   /* Animasi Masuk/Keluar */
   transform: translateX(-100%);
@@ -73,6 +77,7 @@
 
   border-right: 1px solid #f3f4f6;
   border-top: 1px solid #f3f4f6;
+  border-bottom: 1px solid #f3f4f6;
 
   /* Sedikit rounded di sudut kanan */
   border-top-right-radius: 12px;
@@ -134,9 +139,9 @@
 .analysis-content {
   padding: 20px;
 
-  /* KUNCI SCROLL: Hanya bagian ini yang bisa di-scroll */
+  /* KUNCI SCROLL: Hanya bagian dalam panel ini yang bisa di-scroll */
   overflow-y: auto;
-  flex: 1; /* Mengisi sisa ruang */
+  flex: 1; /* Mengisi sisa ruang panel */
 
   /* Scrollbar cantik */
   scrollbar-width: thin;
@@ -270,13 +275,25 @@
 @media (max-width: 768px) {
   .analysis-panel {
     width: 100%;
-    top: 60px; /* Header mobile biasanya lebih kecil */
-    bottom: 0; /* Di mobile boleh menutupi footer */
-    border-radius: 0;
+    top: auto; 
+    bottom: 0; 
+    left: 0;
+    right: 0;
+    height: 70vh; /* Set tinggi di mobile */
+    max-height: 70vh;
+    border-radius: 20px 20px 0 0;
+    transform: translateY(100%); /* Geser ke bawah */
+    border-right: none;
+    border-top: 1px solid #ddd;
   }
+  
+  .analysis-panel.active {
+    transform: translateY(0);
+  }
+
   .analysis-toggle {
-    bottom: 80px;
-    left: auto;
-    right: 20px;
+    bottom: 20px;
+    left: 20px;
+    z-index: 2001; /* Di atas panel */
   }
 }
