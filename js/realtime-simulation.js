@@ -213,7 +213,7 @@ const AmbulanceSimulation = {
         document.getElementById('sim-status').style.color = "#333";
         
         if (summary) {
-            const slowFactor = 3; 
+            const slowFactor = 2.5; 
             const timeMin = Math.ceil((summary.duration * slowFactor) / 60);
             document.getElementById('sim-eta').innerText = `${timeMin} menit`;
         }
