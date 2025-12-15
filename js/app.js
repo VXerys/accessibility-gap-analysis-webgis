@@ -38,6 +38,11 @@
             if (typeof AnalysisUtils !== 'undefined') {
                 AnalysisUtils.init(map);
             }
+
+            // Initialize Realtime Simulation (Ambulance)
+            if (typeof AmbulanceSimulation !== 'undefined') {
+                AmbulanceSimulation.init(map);
+            }
             
             // Update statistics display after a short delay
             // to allow data loading to complete
