@@ -50,16 +50,16 @@
 
   /* KUNCI POSISI VERTIKAL */
   /* Sesuaikan top dengan tinggi header Anda */
-  top: 100px; 
+  top: 100px;
   /* Sesuaikan bottom agar tidak menabrak footer jika perlu, atau biarkan 0 untuk full height */
-  bottom: 20px; 
+  bottom: 20px;
   left: 0;
 
   /* Ukuran Lebar */
   width: 400px;
-  
+
   /* Pastikan tinggi max tidak melebihi viewport */
-  max-height: calc(100vh - 120px); 
+  max-height: calc(100vh - 120px);
 
   background: #ffffff;
   box-shadow: 5px 0 25px rgba(0, 0, 0, 0.15);
@@ -141,7 +141,8 @@
 
   /* KUNCI SCROLL: Hanya bagian dalam panel ini yang bisa di-scroll */
   overflow-y: auto;
-  flex: 1; /* Mengisi sisa ruang panel */
+  flex: 1;
+  /* Mengisi sisa ruang panel */
 
   /* Scrollbar cantik */
   scrollbar-width: thin;
@@ -151,6 +152,7 @@
 .analysis-content::-webkit-scrollbar {
   width: 6px;
 }
+
 .analysis-content::-webkit-scrollbar-thumb {
   background-color: #cbd5e1;
   border-radius: 6px;
@@ -195,6 +197,7 @@
 .mode-icon {
   font-size: 24px;
 }
+
 .mode-text {
   font-size: 13px;
   font-weight: 600;
@@ -211,6 +214,7 @@
   color: #1e40af;
   line-height: 1.5;
 }
+
 .info-instruction {
   margin: 0;
 }
@@ -247,6 +251,7 @@
   cursor: pointer;
   transition: background 0.2s;
 }
+
 .results-clear:hover {
   background: #dc2626;
 }
@@ -267,6 +272,7 @@
 .analysis-panel.has-results .analysis-info {
   display: none !important;
 }
+
 .analysis-panel.has-results .analysis-results {
   display: block !important;
 }
@@ -275,18 +281,20 @@
 @media (max-width: 768px) {
   .analysis-panel {
     width: 100%;
-    top: auto; 
-    bottom: 0; 
+    top: auto;
+    bottom: 0;
     left: 0;
     right: 0;
-    height: 70vh; /* Set tinggi di mobile */
+    height: 70vh;
+    /* Set tinggi di mobile */
     max-height: 70vh;
     border-radius: 20px 20px 0 0;
-    transform: translateY(100%); /* Geser ke bawah */
+    transform: translateY(100%);
+    /* Geser ke bawah */
     border-right: none;
     border-top: 1px solid #ddd;
   }
-  
+
   .analysis-panel.active {
     transform: translateY(0);
   }
@@ -294,6 +302,7 @@
   .analysis-toggle {
     bottom: 20px;
     left: 20px;
-    z-index: 2001; /* Di atas panel */
+    z-index: 2001;
+    /* Di atas panel */
   }
 }

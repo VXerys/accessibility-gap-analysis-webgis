@@ -1,8 +1,3 @@
-/**
- * GeoJSON Data Loader
- * Handles loading and processing of GeoJSON data
- */
-
 const GeoJSONLoader = {
   allFacilities: [],
 
@@ -19,9 +14,30 @@ const GeoJSONLoader = {
         this.processGeoJSONData(schoolData, layers, "school");
         this.processGeoJSONData(healthData, layers, "health");
 
-        // Store facilities for analysis
+        try {
+          if (mapData && mapData.features && typeof turf !== 'undefined') {
+            const boundaryFeature = mapData.features.find(f =>
+              f.geometry.type === "Polygon" || f.geometry.type === "MultiPolygon"
+            );
+
+            if (boundaryFeature) {
+              const areaSqMeters = turf.area(boundaryFeature);
+              const areaSqKm = (areaSqMeters / 1_000_000);
+              const formattedArea = areaSqKm.toLocaleString('id-ID', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+              this.districtArea = `${formattedArea} km²`;
+              console.log("📏 Area Calculated from Data:", this.districtArea);
+            }
+          }
+        } catch (err) {
+          console.error("Area calc error:", err);
+        }
+
         if (typeof AnalysisUtils !== "undefined") {
           AnalysisUtils.storeFacilities(this.allFacilities);
+        }
+
+        if (typeof UIUtils !== 'undefined') {
+          UIUtils.updateStatsDisplay(this.districtArea || "Uncalculated");
         }
 
         UIUtils.hideLoading();
@@ -48,20 +64,24 @@ const GeoJSONLoader = {
     L.geoJSON(data, {
       style: this.getFeatureStyle,
       pointToLayer: (feature, latlng) => {
-        // Store point features for analysis
         if (feature.geometry.type === "Point" && dataSource !== "map") {
           this.allFacilities.push(feature);
         }
         return MarkerUtils.createMarker(feature, latlng, dataSource);
       },
       onEachFeature: (feature, layer) => {
-        // 🔴 UPDATE PENTING: TANGKAP DATA BATAS KECAMATAN
         if (
           feature.properties.BatasKecamatan &&
           typeof AnalysisUtils !== "undefined"
         ) {
           console.log("📍 Batas Kecamatan Terdeteksi & Disimpan");
           AnalysisUtils.setDistrictBoundary(feature);
+
+          if (typeof turf !== 'undefined') {
+            const areaSqMeters = turf.area(feature);
+            const areaSqKm = (areaSqMeters / 1000000).toFixed(2);
+            this.districtArea = `${areaSqKm} km²`;
+          }
         }
 
         this.bindFeaturePopup(feature, layer, layers, dataSource);
@@ -112,7 +132,6 @@ const GeoJSONLoader = {
       });
       layers[category].addLayer(layer);
 
-      // Update stats logic...
       if (category === "sdn") UIUtils.incrementStat("sd");
       else if (category === "smp") UIUtils.incrementStat("smp");
       else if (category === "sma") UIUtils.incrementStat("sma");

@@ -5,18 +5,22 @@
  */
 
 .main-content {
-  max-width: 100%; /* Ubah jadi full width agar responsif dgn sidebar */
+  max-width: 100%;
+  /* Ubah jadi full width agar responsif dgn sidebar */
   margin: 0;
-  padding: 1.5rem; /* Padding luar */
+  padding: 1.5rem;
+  /* Padding luar */
   padding-bottom: 3rem;
   position: relative;
-  overflow-x: hidden; /* Mencegah scroll horizontal saat transisi */
+  overflow-x: hidden;
+  /* Mencegah scroll horizontal saat transisi */
 }
 
 /* --- WRAPPER PETA UTAMA --- */
 .map-wrapper {
   position: relative;
-  height: calc(100vh - 140px); /* Tinggi dinamis */
+  height: calc(100vh - 140px);
+  /* Tinggi dinamis */
   min-height: 500px;
   border-radius: var(--radius-xl);
   overflow: hidden;
@@ -28,16 +32,20 @@
   transition: margin-left 0.3s cubic-bezier(0.4, 0, 0.2, 1),
     width 0.3s cubic-bezier(0.4, 0, 0.2, 1), border-radius 0.3s ease;
 
-  width: 100%; /* Default lebar penuh */
+  width: 100%;
+  /* Default lebar penuh */
   z-index: 1;
 }
 
 /* --- CLASS TAMBAHAN SAAT SIDEBAR TERBUKA --- */
 /* Ini di-toggle oleh Javascript di analysis-utils.js */
 .map-wrapper.sidebar-open {
-  margin-left: 400px; /* Geser ke kanan sebesar lebar sidebar */
-  width: calc(100% - 400px); /* Kecilkan lebar peta */
-  border-top-left-radius: 0; /* Hilangkan radius kiri agar menyatu */
+  margin-left: 400px;
+  /* Geser ke kanan sebesar lebar sidebar */
+  width: calc(100% - 400px);
+  /* Kecilkan lebar peta */
+  border-top-left-radius: 0;
+  /* Hilangkan radius kiri agar menyatu */
   border-bottom-left-radius: 0;
 }
 
@@ -113,7 +121,8 @@
 }
 
 .leaflet-popup-tip {
-  display: none; /* Sembunyikan panah popup agar lebih bersih */
+  display: none;
+  /* Sembunyikan panah popup agar lebih bersih */
 }
 
 /* Layer Control (Legend) */
@@ -140,8 +149,10 @@
   box-shadow: var(--shadow-lg);
   border-radius: var(--radius-md);
   overflow: hidden;
-  margin-right: 20px !important; /* Jarak dari kanan */
-  margin-top: 20px !important; /* Jarak dari atas */
+  margin-right: 20px !important;
+  /* Jarak dari kanan */
+  margin-top: 20px !important;
+  /* Jarak dari atas */
 }
 
 .leaflet-control-zoom a {
@@ -185,7 +196,8 @@
 @media (max-width: 768px) {
   .main-content {
     padding: 1rem;
-    padding-bottom: 80px; /* Ruang untuk tombol toggle di bawah */
+    padding-bottom: 80px;
+    /* Ruang untuk tombol toggle di bawah */
   }
 
   .map-wrapper {
@@ -199,11 +211,13 @@
   .map-wrapper.sidebar-open {
     margin-left: 0;
     width: 100%;
-    border-radius: var(--radius-lg); /* Kembalikan radius */
+    border-radius: var(--radius-lg);
+    /* Kembalikan radius */
   }
 
   .leaflet-control-zoom {
-    display: none; /* Sembunyikan zoom di HP, pakai pinch saja */
+    display: none;
+    /* Sembunyikan zoom di HP, pakai pinch saja */
   }
 }
 

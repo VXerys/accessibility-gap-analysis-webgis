@@ -52,13 +52,42 @@ const AnalysisUtils = {
     toggleBtn.addEventListener("click", (e) => {
       e.preventDefault();
       panel.classList.remove("has-results");
-      panel.classList.toggle("active");
+      const isActive = panel.classList.toggle("active");
+
+      // Toggle Map Shift
+      const mapWrapper = document.querySelector(".map-wrapper");
+      const footer = document.querySelector(".footer");
+
+      if (isActive) {
+        mapWrapper?.classList.add("sidebar-open");
+        footer?.classList.add("sidebar-open");
+        toggleBtn.style.opacity = "0";
+        toggleBtn.style.pointerEvents = "none";
+      } else {
+        mapWrapper?.classList.remove("sidebar-open");
+        footer?.classList.remove("sidebar-open");
+        toggleBtn.style.opacity = "1";
+        toggleBtn.style.pointerEvents = "auto";
+      }
+
+      setTimeout(() => this.map.invalidateSize(), 300);
     });
 
     if (closeBtn)
-      closeBtn.addEventListener("click", () =>
-        panel.classList.remove("active")
-      );
+      closeBtn.addEventListener("click", () => {
+        panel.classList.remove("active");
+        const mapWrapper = document.querySelector(".map-wrapper");
+        const footer = document.querySelector(".footer");
+        const toggleBtn = document.getElementById("analysis-toggle");
+
+        mapWrapper?.classList.remove("sidebar-open");
+        footer?.classList.remove("sidebar-open");
+        if (toggleBtn) {
+          toggleBtn.style.opacity = "1";
+          toggleBtn.style.pointerEvents = "auto";
+        }
+        setTimeout(() => this.map.invalidateSize(), 300);
+      });
     if (clearBtn)
       clearBtn.addEventListener("click", () => this.clearAnalysis());
 
@@ -131,6 +160,9 @@ const AnalysisUtils = {
     } else if (mode === "gap") {
       htmlContent = `<p class="info-instruction">⚠️ <strong>Gap Analysis</strong><br>Klik sembarang titik DALAM BATAS KECAMATAN untuk mengecek ketersediaan fasilitas.</p>`;
       if (panel) panel.classList.add("active");
+    } else if (mode === "clustering") {
+      htmlContent = `<p class="info-instruction">🧩 <strong>GeoAI Clustering</strong><br>Klik <strong>"Jalankan Clustering"</strong> atau klik peta untuk mengelompokkan fasilitas secara otomatis menggunakan K-Means.</p>`;
+      if (panel) panel.classList.add("active");
     } else {
       const instructions = {
         isochrone:
@@ -138,9 +170,8 @@ const AnalysisUtils = {
         buffer: "⭕ Service Area: Klik peta untuk melihat jangkauan radius.",
         topN: "🏆 Klik peta untuk melihat Top 5 lokasi berpotensi padat penduduk.",
       };
-      htmlContent = `<p class="info-instruction">${
-        instructions[mode] || "Pilih mode."
-      }</p>`;
+      htmlContent = `<p class="info-instruction">${instructions[mode] || "Pilih mode."
+        }</p>`;
 
       if (panel) panel.classList.remove("active");
     }
@@ -219,7 +250,10 @@ const AnalysisUtils = {
           "topN",
           "gap",
           "compare",
+          "gap",
+          "compare",
           "prediction",
+          "clustering",
         ].includes(this.state.currentMode)
       ) {
         e.popup.removeFrom(this.map);
@@ -237,7 +271,7 @@ const AnalysisUtils = {
     const panel = document.getElementById("analysis-panel");
 
     if (
-      !["distance", "nearest", "prediction", "compare", "gap"].includes(
+      !["distance", "nearest", "prediction", "compare", "gap", "clustering"].includes(
         this.state.currentMode
       )
     ) {
@@ -270,6 +304,9 @@ const AnalysisUtils = {
         break;
       case "prediction":
         this.predictSettlementGrowth(point, latlng);
+        break;
+      case "clustering":
+        this.performClustering();
         break;
     }
   },
@@ -561,11 +598,11 @@ const AnalysisUtils = {
                   <div>
                       <div style="font-weight:700; color:#2c3e50; font-size:1em; margin-bottom:2px;">Jarak Linear</div>
                       <div style="font-size:1.4em; font-weight:800; color:#333;">${straightDist.toFixed(
-                        2
-                      )} km</div>
+          2
+        )} km</div>
                       <div style="font-size:0.85em; color:#888;">${(
-                        straightDist * 1000
-                      ).toFixed(0)} meter</div>
+            straightDist * 1000
+          ).toFixed(0)} meter</div>
                   </div>
               </div>
           </div>
@@ -592,8 +629,8 @@ const AnalysisUtils = {
                         <div style="font-weight:700; color:#2c3e50; font-size:1em; margin-bottom:2px;">Jarak Rute Jalan</div>
                         <div style="font-size:1.4em; font-weight:800; color:#333;">${distanceKm} km</div>
                         <div style="font-size:0.85em; color:#888;">${summary.distance.toFixed(
-                          0
-                        )} meter</div>
+            0
+          )} meter</div>
                      </div>
                 </div>
             </div>
@@ -839,14 +876,14 @@ const AnalysisUtils = {
           <div style="margin-top:15px; padding:0 10px;">
               <div style="margin-bottom:8px; font-size:0.9em; color:#444;">Zona Ideal (< 500m): <strong style="float:right;">${countIdeal} fasilitas</strong></div>
               <div style="width:100%; background:#eee; height:6px; border-radius:3px; margin-bottom:12px;"><div style="width:${Math.min(
-                (countIdeal / 10) * 100,
-                100
-              )}%; background:#28a745; height:100%; border-radius:3px;"></div></div>
+      (countIdeal / 10) * 100,
+      100
+    )}%; background:#28a745; height:100%; border-radius:3px;"></div></div>
               <div style="margin-bottom:8px; font-size:0.9em; color:#444;">Zona Standar (< 1km): <strong style="float:right;">${countStandard} fasilitas</strong></div>
               <div style="width:100%; background:#eee; height:6px; border-radius:3px; margin-bottom:20px;"><div style="width:${Math.min(
-                (countStandard / 10) * 100,
-                100
-              )}%; background:#ffc107; height:100%; border-radius:3px;"></div></div>
+      (countStandard / 10) * 100,
+      100
+    )}%; background:#ffc107; height:100%; border-radius:3px;"></div></div>
               <div style="background:#f9f9f9; padding:12px; border-radius:8px; border:1px solid #eee;">
                   <h5 style="margin:0 0 10px 0; color:#2c3e50; font-size:0.9em;">Distribusi Tipe Fasilitas (1 KM):</h5>
                   ${distributionHTML}
@@ -973,11 +1010,10 @@ const AnalysisUtils = {
       })
         .addTo(this.state.analysisLayer)
         .bindPopup(`<b>#${rank} ${fac.name}</b><br>Potensi: ${density}`);
-      resultsHTML += `<div class="result-item" style="border-left: 5px solid ${color}; position:relative; overflow:hidden;"><div style="position:absolute; right:-10px; top:-10px; background:${color}; color:white; width:40px; height:40px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-weight:bold; font-size:1.2em; opacity:0.2;">#${rank}</div><div style="font-weight:bold; color:#333; font-size:1.1em; margin-bottom:4px;">${
-        fac.name
-      }</div><div style="font-size:0.85em; color:#666; margin-bottom:8px;">Jarak: <strong>${fac.dist.toFixed(
-        2
-      )} km</strong></div><div style="background:#f8f9fa; padding:8px; border-radius:6px; margin-bottom:6px;"><div style="font-size:0.75em; text-transform:uppercase; color:#888; font-weight:600;">Potensi Kepadatan</div><div style="font-weight:bold; color:${color}; font-size:1em;">${density}</div></div><div style="font-size:0.85em; color:#555; line-height:1.4; border-top:1px solid #eee; padding-top:6px;">💡 ${reason}</div></div>`;
+      resultsHTML += `<div class="result-item" style="border-left: 5px solid ${color}; position:relative; overflow:hidden;"><div style="position:absolute; right:-10px; top:-10px; background:${color}; color:white; width:40px; height:40px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-weight:bold; font-size:1.2em; opacity:0.2;">#${rank}</div><div style="font-weight:bold; color:#333; font-size:1.1em; margin-bottom:4px;">${fac.name
+        }</div><div style="font-size:0.85em; color:#666; margin-bottom:8px;">Jarak: <strong>${fac.dist.toFixed(
+          2
+        )} km</strong></div><div style="background:#f8f9fa; padding:8px; border-radius:6px; margin-bottom:6px;"><div style="font-size:0.75em; text-transform:uppercase; color:#888; font-weight:600;">Potensi Kepadatan</div><div style="font-weight:bold; color:${color}; font-size:1em;">${density}</div></div><div style="font-size:0.85em; color:#555; line-height:1.4; border-top:1px solid #eee; padding-top:6px;">💡 ${reason}</div></div>`;
     });
     await Promise.all(routePromises);
     this.showResults(resultsHTML);
@@ -1245,13 +1281,11 @@ const AnalysisUtils = {
 
     let listHTML = `<ul style="list-style:none; padding:0; margin:0;">`;
     relevantFacilities.forEach((d) => {
-      listHTML += `<li style="display:flex; justify-content:space-between; padding:6px 0; border-bottom:1px solid #eee; font-size:0.85em;"><span>${
-        d.icon
-      } ${
-        d.name
-      }</span><span style="font-weight:bold; color:#444;">${d.dist.toFixed(
-        2
-      )} km</span></li>`;
+      listHTML += `<li style="display:flex; justify-content:space-between; padding:6px 0; border-bottom:1px solid #eee; font-size:0.85em;"><span>${d.icon
+        } ${d.name
+        }</span><span style="font-weight:bold; color:#444;">${d.dist.toFixed(
+          2
+        )} km</span></li>`;
     });
     listHTML += `</ul>`;
     L.circleMarker(latlng, {
@@ -1348,6 +1382,206 @@ const AnalysisUtils = {
     }
   },
 
+  async performClustering() {
+    this.clearAnalysisLayers();
+    UIUtils.showLoading();
+
+    setTimeout(() => {
+      try {
+        const facilities = this.state.allFacilities;
+        if (!facilities || facilities.length === 0) {
+          throw new Error("Data fasilitas belum dimuat.");
+        }
+
+        // 1. Kelompokkan Fasilitas berdasarkan Kategori
+        const categories = {
+          SD: {
+            data: [],
+            color: "#0066cc",
+            label: "Sekolah Dasar",
+            alias: "Cluster SD",
+          },
+          SMP: {
+            data: [],
+            color: "#28a745",
+            label: "SMP/Sederajat",
+            alias: "Cluster SMP",
+          },
+          SMA: {
+            data: [],
+            color: "#dc3545",
+            label: "SMA/SMK",
+            alias: "Cluster SMA",
+          },
+          Universitas: {
+            data: [],
+            color: "#6f42c1",
+            label: "Perguruan Tinggi",
+            alias: "Kawasan Kampus",
+          },
+          Kesehatan: {
+            data: [],
+            color: "#17a2b8",
+            label: "Fasilitas Kesehatan",
+            alias: "Zona Kesehatan",
+          },
+          Lainnya: {
+            data: [],
+            color: "#6c757d",
+            label: "Fasilitas Umum",
+            alias: "Area Fasum",
+          },
+        };
+
+        facilities.forEach((f) => {
+          const props = f.properties;
+          const name = this.getRealFacilityName(props).toLowerCase();
+          const pt = turf.point(f.geometry.coordinates, f.properties);
+
+          if (name.includes("sd ") || name.includes("mib") || name.includes("sdn")) categories.SD.data.push(pt);
+          else if (name.includes("smp") || name.includes("mts")) categories.SMP.data.push(pt);
+          else if (name.includes("sma") || name.includes("smk") || name.includes("man")) categories.SMA.data.push(pt);
+          else if (name.includes("universitas") || name.includes("stikes") || name.includes("akade"))
+            categories.Universitas.data.push(pt);
+          else if (
+            name.includes("rs ") ||
+            name.includes("sakit") ||
+            name.includes("puskesmas") ||
+            name.includes("klinik") ||
+            name.includes("posyandu")
+          )
+            categories.Kesehatan.data.push(pt);
+          else categories.Lainnya.data.push(pt);
+        });
+
+        let resultHTML = "";
+        let totalClusters = 0;
+
+        // 2. Lakukan K-Means untuk Setiap Kategori
+        Object.keys(categories).forEach((key) => {
+          const cat = categories[key];
+          if (cat.data.length === 0) return;
+
+          // Tentukan jumlah cluster dinamis (min 1, max item/2) agar tidak error jika data sedikit
+          // Aturan: Jika data < 3, jadikan 1 cluster. Jika lebih, maksimal 5 cluster.
+          let k = Math.min(5, Math.ceil(cat.data.length / 3));
+          if (cat.data.length < 3) k = 1;
+
+          const collection = turf.featureCollection(cat.data);
+
+          // Turf K-Means
+          const clustered = turf.clustersKmeans(collection, {
+            numberOfClusters: k,
+          });
+
+          // Grouping hasil cluster untuk Convex Hull
+          const groupCoords = {};
+
+          clustered.features.forEach((feature) => {
+            const clusterId = feature.properties.cluster; // 0, 1, 2...
+            const uniqueClusterId = `${key}-${clusterId}`; // SD-0, SD-1
+
+            // Visualisasi Titik
+            L.circleMarker(
+              [
+                feature.geometry.coordinates[1],
+                feature.geometry.coordinates[0],
+              ],
+              {
+                radius: 5,
+                fillColor: cat.color,
+                color: "#fff",
+                weight: 1,
+                opacity: 1,
+                fillOpacity: 0.8,
+              }
+            )
+              .bindPopup(
+                `<b>${this.getRealFacilityName(feature.properties)}</b><br>${cat.alias
+                } #${clusterId + 1}`
+              )
+              .addTo(this.state.analysisLayer);
+
+            if (!groupCoords[clusterId]) groupCoords[clusterId] = [];
+            groupCoords[clusterId].push(feature.geometry.coordinates);
+          });
+
+          // Visualisasi Area (Hull)
+          Object.keys(groupCoords).forEach((cId) => {
+            totalClusters++;
+            const coords = groupCoords[cId];
+            if (coords.length >= 3) {
+              const pts = turf.featureCollection(
+                coords.map((c) => turf.point(c))
+              );
+              const hull = turf.convex(pts);
+              if (hull) {
+                L.geoJSON(hull, {
+                  style: {
+                    color: cat.color,
+                    weight: 2,
+                    dashArray: "5, 5",
+                    fillOpacity: 0.1,
+                    fillColor: cat.color,
+                  },
+                })
+                  .bindTooltip(`${cat.alias} ${parseInt(cId) + 1}`, {
+                    permanent: true,
+                    direction: "center",
+                    className: "cluster-label",
+                  })
+                  .addTo(this.state.analysisLayer);
+              }
+            }
+          });
+
+          // Tambahkan Info ke Panel
+          resultHTML += `
+            <div style="margin-bottom:8px; display:flex; align-items:center; justify-content:space-between; font-size:0.9em; border-bottom:1px solid #eee; padding-bottom:5px;">
+                <div style="display:flex; align-items:center; gap:8px;">
+                    <span style="display:inline-block; width:10px; height:10px; background:${cat.color}; border-radius:50%;"></span>
+                    <span style="color:#555;">${cat.label}</span>
+                </div>
+                <span style="font-weight:bold; color:#333;">${k} Cluster</span>
+            </div>
+          `;
+        });
+
+        this.showResults(`
+            <div class="result-item" style="border:none; box-shadow:none;">
+                 <div style="margin-bottom:15px; text-align:center;">
+                    <div style="font-size:32px;">🧩</div>
+                    <h4 style="margin:5px 0 0 0; color:#2c3e50;">Category Clustering</h4>
+                    <span style="font-size:0.8em; color:#888;">Spatial Grouping by Type</span>
+                </div>
+                
+                <div style="background:#f8f9fa; padding:12px; border-radius:8px; margin-bottom:15px; font-size:0.9em; color:#444; line-height:1.5;">
+                    Algoritma telah mendeteksi <strong>${totalClusters} zona fasilitas</strong> berdasarkan kategori pendidikan dan kesehatan.
+                </div>
+
+                <div style="margin-bottom:15px; background:#fff; border:1px solid #eee; padding:10px; border-radius:8px;">
+                    ${resultHTML}
+                </div>
+
+                <div style="font-size:0.85em; color:#666; border-top:1px solid #eee; padding-top:10px;">
+                    <strong>🎯 Manfaat Analisis Ini:</strong><br>
+                    <ul style="padding-left:15px; margin:5px 0 0 0; line-height:1.4;">
+                        <li><strong>Identifikasi Pusat Layanan:</strong> Area dengan cluster padat menandakan kawasan pusat kegiatan (misal: Kawasan Pendidikan).</li>
+                        <li><strong>Deteksi Ketimpangan:</strong> Jika semua sekolah menumpuk di satu cluster, berarti ada wilayah lain yang tidak terlayani (Blind Spot).</li>
+                        <li><strong>Perencanaan Transportasi:</strong> Cluster fasilitas umum membutuhkan rute angkutan umum yang lebih intensif.</li>
+                    </ul>
+                </div>
+            </div>
+        `);
+      } catch (e) {
+        console.error("Clustering error:", e);
+        this.showResults("Gagal melakukan clustering.", "error");
+      } finally {
+        UIUtils.hideLoading();
+      }
+    }, 500);
+  },
+
   clearAnalysisLayers() {
     if (this.state.analysisLayer) this.state.analysisLayer.clearLayers();
     this.state.currentIsochroneLayer = null;
@@ -1365,6 +1599,12 @@ const AnalysisUtils = {
       if (mapWrapper) mapWrapper.classList.add("sidebar-open");
       const footer = document.querySelector(".footer");
       if (footer) footer.classList.add("sidebar-open");
+      const toggleBtn = document.getElementById("analysis-toggle");
+      if (toggleBtn) {
+        toggleBtn.style.opacity = "0";
+        toggleBtn.style.pointerEvents = "none";
+      }
+      setTimeout(() => this.map.invalidateSize(), 300);
     }
     if (resultsDiv) resultsDiv.style.display = "none";
     if (infoDiv) infoDiv.style.display = "block";
@@ -1384,6 +1624,12 @@ const AnalysisUtils = {
         if (mapWrapper) mapWrapper.classList.add("sidebar-open");
         const footer = document.querySelector(".footer");
         if (footer) footer.classList.add("sidebar-open");
+        const toggleBtn = document.getElementById("analysis-toggle");
+        if (toggleBtn) {
+          toggleBtn.style.opacity = "0";
+          toggleBtn.style.pointerEvents = "none";
+        }
+        setTimeout(() => this.map.invalidateSize(), 300);
       }
     }
   },
