@@ -11,12 +11,12 @@ const ChatAssistant = {
 
     renderUI() {
         const chatHTML = `
-    < !--Chat Trigger Button-- >
+            <!-- Chat Trigger Button -->
             <div class="chat-widget-btn" id="chat-btn">
                 <span class="chat-icon">💬</span>
             </div>
 
-            <!--Chat Window-- >
+            <!-- Chat Window -->
     <div class="chat-window" id="chat-window">
         <div class="chat-header">
             <div class="chat-title">
@@ -63,13 +63,23 @@ const ChatAssistant = {
         const sendBtn = document.getElementById('send-btn');
         const input = document.getElementById('chat-input');
 
-        chatBtn.addEventListener('click', () => chatWindow.classList.add('active'));
-        closeBtn.addEventListener('click', () => chatWindow.classList.remove('active'));
+        if (chatBtn && chatWindow) {
+            chatBtn.addEventListener('click', () => chatWindow.classList.add('active'));
+        }
 
-        sendBtn.addEventListener('click', () => this.handleSend());
-        input.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') this.handleSend();
-        });
+        if (closeBtn && chatWindow) {
+            closeBtn.addEventListener('click', () => chatWindow.classList.remove('active'));
+        }
+
+        if (sendBtn) {
+            sendBtn.addEventListener('click', () => this.handleSend());
+        }
+
+        if (input) {
+            input.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') this.handleSend();
+            });
+        }
     },
 
     async handleSend() {
