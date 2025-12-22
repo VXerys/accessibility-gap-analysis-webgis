@@ -7,7 +7,7 @@ const RoutingService = {
   // 🔴 PENTING: Masukkan API Key OpenRouteService kamu di sini
   // Jangan lupa tanda kutip ('...')
   apiKey:
-    "eyJvcmciOiI1YjNjZTM1OTc4NTExMTAwMDFjZjYyNDgiLCJpZCI6IjhiN2JkMWRhZDIyZTQ5OTI4NjFmNjk0NzgwMTA3MmQ4IiwiaCI6Im11cm11cjY0In0=",
+    (window.ENV && window.ENV.ORS_API_KEY) ? window.ENV.ORS_API_KEY : "",
 
   baseUrl: "https://api.openrouteservice.org/v2",
 

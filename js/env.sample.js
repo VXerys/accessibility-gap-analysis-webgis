@@ -1,3 +1,4 @@
 window.ENV = {
-    GROQ_API_KEY: ""
+    GROQ_API_KEY: "",
+    ORS_API_KEY: ""
 };
