@@ -1,5 +1,5 @@
 const ChatAssistant = {
-    apiKey: (window.ENV && window.ENV.GROQ_API_KEY) ? window.ENV.GROQ_API_KEY : '',
+    apiKey: (window.ENV && window.ENV.GROQ_API_KEY) ? window.ENV.GROQ_API_KEY : (localStorage.getItem('groq_api_key') || ''),
     apiUrl: 'https://api.groq.com/openai/v1/chat/completions',
 
     init(map) {
@@ -80,6 +80,32 @@ const ChatAssistant = {
                 if (e.key === 'Enter') this.handleSend();
             });
         }
+
+        // Event delegation for dynamic 'Save API Key' button
+        document.addEventListener('click', (e) => {
+            if (e.target && e.target.id === 'save-api-key-btn') {
+                this.saveApiKey();
+            }
+        });
+    },
+
+    saveApiKey() {
+        const input = document.getElementById('user-api-key-input');
+        if (input && input.value.trim()) {
+            const key = input.value.trim();
+            this.apiKey = key;
+            localStorage.setItem('groq_api_key', key);
+
+            // Visual feedback
+            const btn = document.getElementById('save-api-key-btn');
+            if (btn) {
+                btn.textContent = 'Tersimpan!';
+                btn.disabled = true;
+                btn.style.backgroundColor = '#10b981';
+            }
+
+            this.addMessage("✅ API Key berhasil disimpan. Silahkan kirim pesan Anda kembali.", 'ai');
+        }
     },
 
     async handleSend() {
@@ -89,6 +115,25 @@ const ChatAssistant = {
 
         this.addMessage(message, 'user');
         input.value = '';
+
+        // Check for API Key
+        if (!this.apiKey) {
+            this.apiKey = localStorage.getItem('groq_api_key') || '';
+        }
+
+        if (!this.apiKey) {
+            this.addMessage(`
+                ⚠️ <strong>API Key Diperlukan</strong><br>
+                Server tidak mendeteksi Environment Variable untuk API Key (biasa terjadi di GitHub Pages).<br>
+                Silakan masukkan <strong>Groq API Key</strong> Anda sendiri (Gratis):<br>
+                <div style="margin-top:8px; margin-bottom:5px;">
+                    <input type="password" id="user-api-key-input" placeholder="gsk_..." style="width:100%; padding:8px; border:1px solid #ccc; border-radius:4px; margin-bottom:8px; box-sizing:border-box;">
+                    <button id="save-api-key-btn" style="width:100%; padding:8px; background:#2563eb; color:white; border:none; border-radius:4px; cursor:pointer;">Simpan & Lanjutkan</button>
+                </div>
+                <small style="color:#64748b;">Key akan disimpan aman di LocalStorage browser Anda.</small>
+            `, 'ai');
+            return;
+        }
 
         this.showTyping(true);
 
