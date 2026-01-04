@@ -1,22 +1,7 @@
-/**
- * Routing Service Module
- * Menghitung rute, waktu tempuh, dan isochrone menggunakan OpenRouteService API
- */
-
 const RoutingService = {
-  // 🔴 PENTING: Masukkan API Key OpenRouteService kamu di sini
-  // Jangan lupa tanda kutip ('...')
-  apiKey:
-    (window.ENV && window.ENV.ORS_API_KEY) ? window.ENV.ORS_API_KEY : "",
-
+  apiKey: window.ENV && window.ENV.ORS_API_KEY ? window.ENV.ORS_API_KEY : "",
   baseUrl: "https://api.openrouteservice.org/v2",
 
-  /**
-   * Hitung rute dan waktu tempuh antar dua titik
-   * @param {Array} start - [lng, lat]
-   * @param {Array} end - [lng, lat]
-   * @param {string} profile - 'driving-car', 'cycling-regular', 'foot-walking'
-   */
   async getRoute(start, end, profile = "driving-car") {
     try {
       const response = await fetch(
@@ -46,14 +31,6 @@ const RoutingService = {
     }
   },
 
-  /**
-   * Ambil data Isochrone (Area Layanan)
-   * Mendukung mode Waktu (time) dan Jarak (distance)
-   * * @param {Array} center - [lng, lat]
-   * @param {string} profile - Mode transportasi
-   * @param {Array} range - Array rentang (detik atau meter)
-   * @param {string} rangeType - 'time' (default) atau 'distance'
-   */
   async getIsochrones(
     center,
     profile = "driving-car",
@@ -70,8 +47,8 @@ const RoutingService = {
         body: JSON.stringify({
           locations: [center],
           range: range,
-          range_type: rangeType, // 'time' atau 'distance'
-          area_units: "m", // Satuan output area selalu meter persegi
+          range_type: rangeType,
+          area_units: "m",
         }),
       });
 
@@ -88,21 +65,14 @@ const RoutingService = {
     }
   },
 
-  /**
-   * Helper: Tentukan warna berdasarkan durasi waktu (Traffic Light System)
-   * Digunakan untuk pewarnaan rute
-   */
   getTimeColor(durationSeconds) {
     const minutes = Math.round(durationSeconds / 60);
-
-    // Logika Skala Lokal (Kecamatan/Kota)
-    if (minutes <= 10) return "#28a745"; // Hijau (Sangat Dekat)
-    if (minutes <= 30) return "#ffc107"; // Kuning (Menengah)
-    return "#dc3545"; // Merah (Jauh)
+    if (minutes <= 10) return "#28a745";
+    if (minutes <= 30) return "#ffc107";
+    return "#dc3545";
   },
 };
 
-// Export module agar bisa diakses oleh file lain
 if (typeof module !== "undefined" && module.exports) {
   module.exports = RoutingService;
 }

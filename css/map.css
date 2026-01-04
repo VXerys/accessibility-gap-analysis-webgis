@@ -1,51 +1,31 @@
-/**
- * Map Container Styles
- * Main map wrapper and Leaflet customizations
- * Updated for Sidebar Layout Support
- */
-
 .main-content {
   max-width: 100%;
-  /* Ubah jadi full width agar responsif dgn sidebar */
   margin: 0;
   padding: 1.5rem;
-  /* Padding luar */
   padding-bottom: 3rem;
   position: relative;
   overflow-x: hidden;
-  /* Mencegah scroll horizontal saat transisi */
 }
 
-/* --- WRAPPER PETA UTAMA --- */
 .map-wrapper {
   position: relative;
   height: calc(100vh - 140px);
-  /* Tinggi dinamis */
   min-height: 500px;
   border-radius: var(--radius-xl);
   overflow: hidden;
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
   background: var(--white);
   border: 3px solid rgba(255, 255, 255, 0.5);
-
-  /* Transisi Halus untuk Efek Geser Sidebar */
   transition: margin-left 0.3s cubic-bezier(0.4, 0, 0.2, 1),
     width 0.3s cubic-bezier(0.4, 0, 0.2, 1), border-radius 0.3s ease;
-
   width: 100%;
-  /* Default lebar penuh */
   z-index: 1;
 }
 
-/* --- CLASS TAMBAHAN SAAT SIDEBAR TERBUKA --- */
-/* Ini di-toggle oleh Javascript di analysis-utils.js */
 .map-wrapper.sidebar-open {
   margin-left: 400px;
-  /* Geser ke kanan sebesar lebar sidebar */
   width: calc(100% - 400px);
-  /* Kecilkan lebar peta */
   border-top-left-radius: 0;
-  /* Hilangkan radius kiri agar menyatu */
   border-bottom-left-radius: 0;
 }
 
@@ -60,7 +40,6 @@
   z-index: 1;
 }
 
-/* --- LOADING OVERLAY --- */
 .loading-overlay {
   position: absolute;
   top: 0;
@@ -102,9 +81,6 @@
   font-size: 1rem;
 }
 
-/* --- LEAFLET CUSTOMIZATIONS --- */
-
-/* Popup Style */
 .leaflet-popup-content-wrapper {
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-xl);
@@ -122,10 +98,8 @@
 
 .leaflet-popup-tip {
   display: none;
-  /* Sembunyikan panah popup agar lebih bersih */
 }
 
-/* Layer Control (Legend) */
 .leaflet-control-layers {
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-lg);
@@ -143,16 +117,13 @@
   background-size: 60%;
 }
 
-/* Zoom Control */
 .leaflet-control-zoom {
   border: none;
   box-shadow: var(--shadow-lg);
   border-radius: var(--radius-md);
   overflow: hidden;
   margin-right: 20px !important;
-  /* Jarak dari kanan */
   margin-top: 20px !important;
-  /* Jarak dari atas */
 }
 
 .leaflet-control-zoom a {
@@ -169,7 +140,6 @@
   color: var(--white);
 }
 
-/* Scale Control */
 .leaflet-control-scale {
   margin-bottom: 20px !important;
   margin-left: 20px !important;
@@ -190,34 +160,24 @@
   border: none;
 }
 
-/* --- RESPONSIVE MEDIA QUERIES --- */
-
-/* Tablet & Mobile */
 @media (max-width: 768px) {
   .main-content {
     padding: 1rem;
     padding-bottom: 80px;
-    /* Ruang untuk tombol toggle di bawah */
   }
-
   .map-wrapper {
     height: calc(100vh - 180px);
     border-radius: var(--radius-lg);
     min-height: 400px;
     border-width: 2px;
   }
-
-  /* DI MOBILE: Jangan geser peta, biarkan tertutup panel */
   .map-wrapper.sidebar-open {
     margin-left: 0;
     width: 100%;
     border-radius: var(--radius-lg);
-    /* Kembalikan radius */
   }
-
   .leaflet-control-zoom {
     display: none;
-    /* Sembunyikan zoom di HP, pakai pinch saja */
   }
 }
 
@@ -225,7 +185,6 @@
   .main-content {
     padding: 0.5rem;
   }
-
   .map-wrapper {
     border-radius: var(--radius-md);
     height: calc(100vh - 160px);

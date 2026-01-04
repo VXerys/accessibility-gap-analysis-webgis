@@ -1,8 +1,3 @@
-/**
- * Footer Styles
- * Bottom section with credits and links
- */
-
 .footer {
   background: linear-gradient(135deg, #1f2937 0%, #111827 100%);
   color: var(--white);
@@ -106,7 +101,6 @@
   opacity: 0.9;
 }
 
-/* Responsive */
 @media (max-width: 768px) {
   .footer-grid {
     grid-template-columns: 1fr;

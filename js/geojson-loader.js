@@ -15,15 +15,20 @@ const GeoJSONLoader = {
         this.processGeoJSONData(healthData, layers, "health");
 
         try {
-          if (mapData && mapData.features && typeof turf !== 'undefined') {
-            const boundaryFeature = mapData.features.find(f =>
-              f.geometry.type === "Polygon" || f.geometry.type === "MultiPolygon"
+          if (mapData && mapData.features && typeof turf !== "undefined") {
+            const boundaryFeature = mapData.features.find(
+              (f) =>
+                f.geometry.type === "Polygon" ||
+                f.geometry.type === "MultiPolygon"
             );
 
             if (boundaryFeature) {
               const areaSqMeters = turf.area(boundaryFeature);
-              const areaSqKm = (areaSqMeters / 1_000_000);
-              const formattedArea = areaSqKm.toLocaleString('id-ID', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+              const areaSqKm = areaSqMeters / 1_000_000;
+              const formattedArea = areaSqKm.toLocaleString("id-ID", {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2,
+              });
               this.districtArea = `${formattedArea} km²`;
               console.log("📏 Area Calculated from Data:", this.districtArea);
             }
@@ -36,7 +41,7 @@ const GeoJSONLoader = {
           AnalysisUtils.storeFacilities(this.allFacilities);
         }
 
-        if (typeof UIUtils !== 'undefined') {
+        if (typeof UIUtils !== "undefined") {
           UIUtils.updateStatsDisplay(this.districtArea || "Uncalculated");
         }
 
@@ -77,7 +82,7 @@ const GeoJSONLoader = {
           console.log("📍 Batas Kecamatan Terdeteksi & Disimpan");
           AnalysisUtils.setDistrictBoundary(feature);
 
-          if (typeof turf !== 'undefined') {
+          if (typeof turf !== "undefined") {
             const areaSqMeters = turf.area(feature);
             const areaSqKm = (areaSqMeters / 1000000).toFixed(2);
             this.districtArea = `${areaSqKm} km²`;

@@ -1,15 +1,7 @@
-/**
- * Analysis Panel Styles - FIXED SIDEBAR LAYOUT
- * Posisi: Terkunci di antara Header dan Footer
- */
-
-/* --- 1. TOMBOL TOGGLE (Kiri Bawah) --- */
 .analysis-toggle {
   position: fixed;
-  /* Letakkan tombol sedikit di atas footer */
   bottom: 90px;
   left: 20px;
-
   background: linear-gradient(135deg, #6366f1 0%, #a855f7 100%);
   color: white;
   border: none;
@@ -19,16 +11,11 @@
   font-size: 14px;
   font-weight: 600;
   cursor: pointer;
-
-  /* Shadow & Efek */
   box-shadow: 0 10px 25px -5px rgba(99, 102, 241, 0.5);
   border: 1px solid rgba(255, 255, 255, 0.2);
-
   display: flex;
   align-items: center;
   gap: 10px;
-
-  /* Z-Index tinggi agar selalu terlihat di atas peta */
   z-index: 2000;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
@@ -43,66 +30,39 @@
   transform: scale(0.95);
 }
 
-/* --- 2. PANEL ANALISIS (SIDEBAR) --- */
 .analysis-panel {
-  /* GUNAKAN FIXED AGAR TIDAK IKUT SCROLL HALAMAN */
   position: fixed;
-
-  /* KUNCI POSISI VERTIKAL */
-  /* Sesuaikan top dengan tinggi header Anda */
   top: 100px;
-  /* Sesuaikan bottom agar tidak menabrak footer jika perlu, atau biarkan 0 untuk full height */
   bottom: 20px;
   left: 0;
-
-  /* Ukuran Lebar */
   width: 400px;
-
-  /* Pastikan tinggi max tidak melebihi viewport */
   max-height: calc(100vh - 120px);
-
   background: #ffffff;
   box-shadow: 5px 0 25px rgba(0, 0, 0, 0.15);
-
-  /* Z-Index di bawah Modal tapi di atas Peta dan Elemen lain */
   z-index: 2000;
-
-  /* Animasi Masuk/Keluar */
   transform: translateX(-100%);
   transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-
-  /* Layout Flex untuk Header vs Konten */
   display: flex;
   flex-direction: column;
-
   border-right: 1px solid #f3f4f6;
   border-top: 1px solid #f3f4f6;
   border-bottom: 1px solid #f3f4f6;
-
-  /* Sedikit rounded di sudut kanan */
   border-top-right-radius: 12px;
   border-bottom-right-radius: 12px;
 }
 
-/* State saat panel terbuka */
 .analysis-panel.active {
   transform: translateX(0);
 }
 
-/* --- BAGIAN HEADER PANEL --- */
 .analysis-header {
-  /* Warna Header Panel */
   background: linear-gradient(to right, #4f46e5, #7c3aed);
   padding: 16px 24px;
-
   display: flex;
   justify-content: space-between;
   align-items: center;
   color: white;
-
-  /* Agar header tidak mengecil */
   flex-shrink: 0;
-
   border-top-right-radius: 12px;
 }
 
@@ -135,16 +95,10 @@
   transform: rotate(90deg);
 }
 
-/* --- BAGIAN ISI KONTEN (SCROLLABLE) --- */
 .analysis-content {
   padding: 20px;
-
-  /* KUNCI SCROLL: Hanya bagian dalam panel ini yang bisa di-scroll */
   overflow-y: auto;
   flex: 1;
-  /* Mengisi sisa ruang panel */
-
-  /* Scrollbar cantik */
   scrollbar-width: thin;
   scrollbar-color: #cbd5e1 transparent;
 }
@@ -158,7 +112,6 @@
   border-radius: 6px;
 }
 
-/* --- GRID MENU UTAMA --- */
 .analysis-modes {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
@@ -203,7 +156,6 @@
   font-weight: 600;
 }
 
-/* Info Box */
 .analysis-info {
   background: #eff6ff;
   border: 1px solid #bfdbfe;
@@ -219,7 +171,6 @@
   margin: 0;
 }
 
-/* --- HASIL ANALISIS --- */
 .analysis-results {
   margin-top: 0;
   animation: fadeIn 0.3s ease;
@@ -256,7 +207,6 @@
   background: #dc2626;
 }
 
-/* Kartu Hasil */
 .result-item {
   background: white;
   border-radius: 12px;
@@ -266,8 +216,6 @@
   margin-bottom: 12px;
 }
 
-/* --- LOGIKA TAMPILAN --- */
-/* Saat ada hasil, sembunyikan menu */
 .analysis-panel.has-results .analysis-modes,
 .analysis-panel.has-results .analysis-info {
   display: none !important;
@@ -277,7 +225,6 @@
   display: block !important;
 }
 
-/* Mobile Responsiveness */
 @media (max-width: 768px) {
   .analysis-panel {
     width: 100%;
@@ -286,13 +233,28 @@
     left: 0;
     right: 0;
     height: 70vh;
-    /* Set tinggi di mobile */
     max-height: 70vh;
     border-radius: 20px 20px 0 0;
     transform: translateY(100%);
-    /* Geser ke bawah */
     border-right: none;
     border-top: 1px solid #ddd;
+  }
+
+  .analysis-panel::after {
+    content: "";
+    position: absolute;
+    top: 8px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 40px;
+    height: 4px;
+    background-color: #e2e8f0;
+    border-radius: 2px;
+    pointer-events: none;
+  }
+
+  .analysis-header {
+    padding-top: 24px;
   }
 
   .analysis-panel.active {
@@ -303,6 +265,5 @@
     bottom: 20px;
     left: 20px;
     z-index: 2001;
-    /* Di atas panel */
   }
 }
