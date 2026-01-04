@@ -162,12 +162,12 @@ const PolicePatrolSimulation = {
       const container = mapWrapper || document.body;
 
       Object.assign(widget.style, {
-        position: "absolute",
-        top: "20px",
-        left: "50%",
-        transform: "translateX(-50%)",
-        bottom: "auto",
-        right: "auto",
+        position: "fixed",
+        bottom: "35px",
+        right: "100px",
+        top: "auto",
+        left: "auto",
+        transform: "none",
         background: "white",
         padding: "8px 15px",
         borderRadius: "50px",
