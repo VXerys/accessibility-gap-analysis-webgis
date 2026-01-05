@@ -1,0 +1,6 @@
+[build]
+  publish = "."
+  command = "node scripts/generate-env.js"
+
+[build.environment]
+  NODE_VERSION = "18"
