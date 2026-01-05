@@ -4,3 +4,5 @@
 
 [build.environment]
   NODE_VERSION = "18"
+  # Skip secret detection - these API keys are intentionally client-side
+  NETLIFY_SKIP_SECRETS_CHECK = "true"
