@@ -64,16 +64,19 @@ Object.assign(AnalysisUtils, {
             style: { color: "#3388ff", weight: 5, opacity: 0.8 },
           }).addTo(this.state.analysisLayer);
           this.showResults(`
-                    <div class="result-item" style="padding: 15px; border: 1px solid #eee; border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);">
-                        <div style="display:flex; align-items:center; gap:15px;">
-                             <div style="font-size:24px;">🚗</div>
-                             <div>
-                                <div style="font-weight:700; color:#2c3e50; font-size:1em; margin-bottom:2px;">Jarak Rute Jalan</div>
-                                <div style="font-size:1.4em; font-weight:800; color:#333;">${distanceKm} km</div>
-                                <div style="font-size:0.85em; color:#888;">${summary.distance.toFixed(
-                                  0
-                                )} meter</div>
-                             </div>
+                    <div class="modern-result-card">
+                        <h4><i class="ph-duotone ph-road-horizon" style="color:#3388ff"></i> Jarak Rute Jalan</h4>
+                        
+                        <div class="metric-grid" style="margin-bottom:0; grid-template-columns: 1fr;">
+                            <div class="metric-card" style="padding: 20px;">
+                                <div class="metric-value" style="color:#3388ff; font-size:2.5rem;">${distanceKm} <span style="font-size:1rem; color:#666;">km</span></div>
+                                <div class="metric-label">Total Jarak Tempuh</div>
+                            </div>
+                        </div>
+
+                        <div style="margin-top:16px; padding:12px; background:#f0f9ff; border-radius:12px; color:#0c4a6e; font-size:0.9em; display:flex; gap:10px; align-items:center;">
+                            <i class="ph-fill ph-info"></i>
+                            <span>Jarak dihitung berdasarkan jaringan jalan asli menggunakan API routing.</span>
                         </div>
                     </div>
                   `);

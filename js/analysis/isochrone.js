@@ -21,14 +21,18 @@ Object.assign(AnalysisUtils, {
 
       if (type === "time") {
         title = "Analisis Aksesibilitas Waktu Tempuh";
-        subtitle = "Berdasarkan kecepatan berjalan kaki rata-rata (5 km/jam)";
-        ranges = [0.5, 1.0, 1.5];
-        labels = ["5 menit (0.5 km)", "10 menit (1 km)", "15 menit (1.5 km)"];
+        subtitle = "Berdasarkan estimasi waktu dan jarak tempuh";
+        ranges = [0.05, 0.25, 0.5];
+        labels = [
+          "2-3 menit (50 m)",
+          "10-15 menit (250 m)",
+          "30 menit (500 m)",
+        ];
       } else {
         title = "Analisis Service Area";
         subtitle = "Analisis jangkauan layanan berdasarkan radius.";
-        ranges = [0.5, 1.0, 1.5];
-        labels = ["500 m", "1 km", "1.5 km"];
+        ranges = [0.05, 0.25, 0.5];
+        labels = ["50 m", "250 m", "500 m"];
       }
 
       const center = turf.point(point);
@@ -78,22 +82,39 @@ Object.assign(AnalysisUtils, {
       this.renderIsochroneLayer("all");
 
       const resultHTML = `
-            <div class="result-item" style="padding: 20px; border: none; box-shadow: none;">
-                <h4 style="margin:0 0 5px 0; color:#2c3e50; font-size:16px;">${title}</h4>
-                <div style="font-size:0.8em; color:#666; margin-bottom:15px; border-bottom:1px solid #eee; padding-bottom:10px;">${subtitle}</div>
-                <div style="margin-bottom:10px; background:#f0fdf4; padding:12px; border-radius:6px; border-left:5px solid #28a745;">
-                    <div style="font-weight:700; font-size:1em; color:#15803d;">${labels[0]}</div>
-                    <div style="font-size:0.9em; color:#333; margin-top:2px;"><strong>${facilityCounts[0]}</strong> fasilitas tersedia</div>
+            <div class="modern-result-card">
+                <h4><i class="ph-duotone ph-timer" style="color:#8b5cf6"></i> ${title}</h4>
+                <div style="font-size:0.9em; color:#64748b; margin-bottom:16px;">${subtitle}</div>
+                
+                <div style="display:flex; flex-direction:column; gap:12px;">
+                    <div class="highlight-box success" style="margin:0; padding:12px; border-left:4px solid #10b981;">
+                        <div style="display:flex; justify-content:space-between; align-items:center;">
+                            <span style="font-weight:700; color:#047857;">${labels[0]}</span>
+                            <span style="background:white; padding:2px 8px; border-radius:12px; font-weight:bold; font-size:0.85em; color:#047857;">${facilityCounts[0]} Fasilitas</span>
+                        </div>
+                    </div>
+                    
+                    <div class="highlight-box warning" style="margin:0; padding:12px; border-left:4px solid #f59e0b;">
+                        <div style="display:flex; justify-content:space-between; align-items:center;">
+                            <span style="font-weight:700; color:#b45309;">${labels[1]}</span>
+                            <span style="background:white; padding:2px 8px; border-radius:12px; font-weight:bold; font-size:0.85em; color:#b45309;">+ ${facilityCounts[1]} Fasilitas</span>
+                        </div>
+                    </div>
+
+                    <div class="highlight-box danger" style="margin:0; padding:12px; border-left:4px solid #ef4444;">
+                        <div style="display:flex; justify-content:space-between; align-items:center;">
+                            <span style="font-weight:700; color:#b91c1c;">${labels[2]}</span>
+                            <span style="background:white; padding:2px 8px; border-radius:12px; font-weight:bold; font-size:0.85em; color:#b91c1c;">+ ${facilityCounts[2]} Fasilitas</span>
+                        </div>
+                    </div>
                 </div>
-                <div style="margin-bottom:10px; background:#fefce8; padding:12px; border-radius:6px; border-left:5px solid #ffc107;">
-                    <div style="font-weight:700; font-size:1em; color:#b45309;">${labels[1]}</div>
-                    <div style="font-size:0.9em; color:#333; margin-top:2px;"><strong>${facilityCounts[1]}</strong> fasilitas tersedia</div>
+
+                <div class="highlight-box" style="margin-top:16px; background:#f8fafc; border:1px solid #e2e8f0;">
+                    <div class="highlight-title" style="font-size:0.9em;"><i class="ph-fill ph-check-circle" style="color:#10b981"></i> Kesimpulan</div>
+                    <div class="highlight-desc">
+                         Area hijau adalah zona dengan aksesibilitas terbaik. Semakin merah, semakin sulit akses menuju pusat analisis.
+                    </div>
                 </div>
-                <div style="margin-bottom:15px; background:#fef2f2; padding:12px; border-radius:6px; border-left:5px solid #dc3545;">
-                    <div style="font-weight:700; font-size:1em; color:#b91c1c;">${labels[2]}</div>
-                    <div style="font-size:0.9em; color:#333; margin-top:2px;"><strong>${facilityCounts[2]}</strong> fasilitas tersedia</div>
-                </div>
-                <div style="color:#28a745; font-weight:600; font-size:0.85em; display:flex; align-items:center; gap:6px;"><span style="font-size:1.2em;">✓</span> Analisis selesai ditampilkan</div>
             </div>`;
 
       this.showResults(resultHTML);

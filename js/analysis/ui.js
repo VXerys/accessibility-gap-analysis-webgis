@@ -1,60 +1,79 @@
 Object.assign(AnalysisUtils, {
   setupEventListeners() {
-    const toggleBtn = document.getElementById("analysis-toggle");
-    const panel = document.getElementById("analysis-panel");
-    const closeBtn = document.getElementById("analysis-close");
+    // New Dock Element Handling
+    const dockContainer = document.querySelector(".dock-glass");
+    const modeButtons = dockContainer
+      ? dockContainer.querySelectorAll(".dock-item[data-mode]")
+      : [];
     const clearBtn = document.getElementById("clear-analysis");
-    const modeButtons = document.querySelectorAll(".analysis-mode-btn");
 
-    if (!toggleBtn || !panel) return;
-
-    toggleBtn.addEventListener("click", (e) => {
-      e.preventDefault();
-      panel.classList.remove("has-results");
-      const isActive = panel.classList.toggle("active");
-      const mapWrapper = document.querySelector(".map-wrapper");
-      const footer = document.querySelector(".footer");
-
-      if (isActive) {
-        mapWrapper?.classList.add("sidebar-open");
-        footer?.classList.add("sidebar-open");
-        toggleBtn.style.opacity = "0";
-        toggleBtn.style.pointerEvents = "none";
-      } else {
-        mapWrapper?.classList.remove("sidebar-open");
-        footer?.classList.remove("sidebar-open");
-        toggleBtn.style.opacity = "1";
-        toggleBtn.style.pointerEvents = "auto";
-      }
-      setTimeout(() => this.map.invalidateSize(), 300);
-    });
-
-    if (closeBtn)
-      closeBtn.addEventListener("click", () => {
-        panel.classList.remove("active");
-        const mapWrapper = document.querySelector(".map-wrapper");
-        const footer = document.querySelector(".footer");
-        const toggleBtn = document.getElementById("analysis-toggle");
-
-        mapWrapper?.classList.remove("sidebar-open");
-        footer?.classList.remove("sidebar-open");
-        if (toggleBtn) {
-          toggleBtn.style.opacity = "1";
-          toggleBtn.style.pointerEvents = "auto";
-        }
-        setTimeout(() => this.map.invalidateSize(), 300);
-      });
-    if (clearBtn)
-      clearBtn.addEventListener("click", () => this.clearAnalysis());
-
+    // Mode Buttons Handler (Dock)
     modeButtons.forEach((btn) => {
       btn.addEventListener("click", (e) => {
         const mode = e.currentTarget.dataset.mode;
-        this.setMode(mode);
+
+        // Deactivate all first
         modeButtons.forEach((b) => b.classList.remove("active"));
-        e.currentTarget.classList.add("active");
+
+        // Toggle Logic
+        if (this.state.currentMode === mode) {
+          // Unselect if same mode clicked
+          this.setMode(null);
+          e.currentTarget.classList.remove("active");
+        } else {
+          // Activate new mode
+          this.setMode(mode);
+          e.currentTarget.classList.add("active");
+
+          // Show toast instruction immediately
+          this.showInstructionToast(mode);
+        }
       });
     });
+
+    if (clearBtn) {
+      clearBtn.addEventListener("click", () => {
+        this.setMode(null); // Disable any active tool
+        this.clearAnalysis();
+        modeButtons.forEach((b) => b.classList.remove("active"));
+        const toast = document.getElementById("analysis-results");
+        if (toast) toast.style.display = "none";
+      });
+    }
+  },
+
+  showInstructionToast(mode) {
+    const instructions = {
+      nearest: "Klik pada peta untuk mencari fasilitas terdekat.",
+      distance: "Klik Titik A dan Titik B pada peta untuk mengukur jarak.",
+      isochrone:
+        "Klik lokasi pada peta untuk melihat jangkauan akses (50m - 250m - 500m).",
+      buffer: "Klik lokasi untuk melihat area layanan (Service Area).",
+      gap: "Klik area kecamatan untuk analisis kesenjangan akses.",
+      compare: "Klik dua lokasi berbeda untuk membandingkan aksesibilitasnya.",
+      clustering:
+        "Klik 'Jalankan Clustering' atau klik peta untuk analisis K-Means.",
+      prediction: "Klik area dalam batas kecamatan untuk prediksi pemukiman.",
+      topN: "Klik peta untuk melihat Top 5 lokasi berpotensi padat penduduk.",
+    };
+
+    const msg =
+      instructions[mode] || "Mode aktif. Silakan berinteraksi dengan peta.";
+
+    // Target the floating pill directly
+    const infoPill = document.getElementById("analysis-info");
+    if (infoPill) {
+      infoPill.innerHTML = `<i class="ph-fill ph-info"></i> ${msg}`;
+      infoPill.style.display = "block";
+      // Ensure pill animation triggers
+      infoPill.style.animation = "none";
+      infoPill.offsetHeight; /* trigger reflow */
+      infoPill.style.animation = "fadeIn 0.3s ease";
+    }
+
+    // Hide old toast if present
+    const oldToast = document.getElementById("analysis-results");
+    if (oldToast) oldToast.style.display = "none";
   },
 
   setMode(mode) {
@@ -265,21 +284,32 @@ Object.assign(AnalysisUtils, {
     );
   },
 
+  closeSidebar() {
+    const sidebar = document.getElementById("analysis-sidebar");
+    if (sidebar) sidebar.classList.remove("active");
+  },
+
   showResults(content, type = "success") {
-    const panel = document.getElementById("analysis-panel");
-    const resultsDiv = document.getElementById("analysis-results");
-    const contentDiv = document.getElementById("results-content");
-    const infoDiv = document.getElementById("analysis-info");
-    if (panel && resultsDiv && contentDiv) {
-      infoDiv.style.display = "none";
-      contentDiv.innerHTML = content;
-      resultsDiv.style.display = "block";
-      panel.classList.add("has-results");
-      panel.classList.add("active");
-      const mapWrapper = document.querySelector(".map-wrapper");
-      if (mapWrapper) mapWrapper.classList.add("sidebar-open");
-      const footer = document.querySelector(".footer");
-      if (footer) footer.classList.add("sidebar-open");
+    const sidebar = document.getElementById("analysis-sidebar");
+    const sidebarContent = document.getElementById("analysis-sidebar-content");
+    const infoDiv = document.getElementById("analysis-info"); // Floating pill
+
+    if (sidebar && sidebarContent) {
+      if (infoDiv) infoDiv.style.display = "none";
+
+      sidebarContent.innerHTML = content;
+      sidebar.classList.add("active");
+
+      // Optionally shift map controls or map center if needed,
+      // but for now just showing sidebar is enough.
+
+      // Ensure the old toast is hidden if it exists
+      const oldToast = document.getElementById("analysis-results");
+      if (oldToast) oldToast.style.display = "none";
+    } else {
+      console.error("Analysis Sidebar elements not found.");
+      // Fallback to console
+      console.log("Analysis Results:", content);
     }
   },
 });

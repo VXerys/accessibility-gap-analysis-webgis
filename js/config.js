@@ -31,7 +31,7 @@ const MapConfig = {
     smp: "SMP/SMPN/SMPIT",
     sma: "SMA/SMAN/SMK",
     universitas: "Universitas",
-    lainnya: "Lainnya (Madrasah, dll)",
+    lainnya: "Madrasah",
     rumahSakit: "Rumah Sakit",
     puskesmas: "Puskesmas",
     klinik: "Klinik",

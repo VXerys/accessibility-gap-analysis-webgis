@@ -1,101 +1,184 @@
 .simulation-panel {
-  background: white;
+  position: absolute;
+  top: 100px;
+  left: 20px; /* Moved to Left (under FAB) */
+  width: 260px;
+  background: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(12px);
   padding: 12px 16px;
-  border-radius: 8px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
-  font-family: "Poppins", sans-serif;
-  min-width: 220px;
-  margin-bottom: 25px;
-  margin-right: 15px;
-  border-left: 5px solid #ef4444;
-  background: linear-gradient(to right, #fff, #fff5f5);
-  pointer-events: auto;
-  z-index: 1000;
-  animation: slideInUp 0.5s ease-out;
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+  z-index: 500;
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  transition: opacity 0.3s;
+}
+
+.simulation-panel:hover {
+  background: rgba(255, 255, 255, 0.95);
+  box-shadow: var(--shadow-md);
 }
 
 .sim-header {
+  font-weight: 700;
+  color: var(--danger-color);
+  margin-bottom: 8px;
   display: flex;
   align-items: center;
   gap: 8px;
-  font-size: 0.95em;
-  color: #1f2937;
-  margin-bottom: 10px;
-  border-bottom: 2px solid #fee2e2;
-  padding-bottom: 8px;
-}
-
-.sim-stats {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 12px;
-  font-size: 0.85em;
-  font-weight: 600;
-  color: #4b5563;
-}
-
-#sim-speed {
-  font-size: 1.4em;
-  color: #dc2626;
-  font-weight: 800;
-  font-variant-numeric: tabular-nums;
+  font-size: 0.85rem;
 }
 
 .sim-controls {
   display: flex;
   gap: 8px;
+  margin-top: 8px;
 }
 
 .sim-btn {
   flex: 1;
-  padding: 8px;
-  border: none;
-  border-radius: 6px;
-  cursor: pointer;
+  padding: 6px;
+  border-radius: 8px;
   font-weight: 600;
-  font-size: 0.85em;
-  transition: all 0.2s ease;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  cursor: pointer;
+  border: none;
+  font-size: 0.75rem;
+}
+.start {
+  background: #dcfce7;
+  color: #166534;
+}
+.stop {
+  background: #fee2e2;
+  color: #991b1b;
 }
 
-.sim-btn:active {
-  transform: translateY(1px);
-  box-shadow: none;
+/* Dark Mode Simulation Panel */
+[data-theme="dark"] .simulation-panel {
+  background: rgba(30, 41, 59, 0.9);
+  border-color: rgba(255, 255, 255, 0.1);
+}
+[data-theme="dark"] .simulation-panel:hover {
+  background: rgba(15, 23, 42, 0.95);
+}
+[data-theme="dark"] .sim-header {
+  color: #fb7185; /* Light Rose */
+}
+[data-theme="dark"] .sim-btn.start {
+  background: rgba(34, 197, 94, 0.2);
+  color: #4ade80;
+}
+[data-theme="dark"] .sim-btn.stop {
+  background: rgba(239, 68, 68, 0.2);
+  color: #f87171;
 }
 
-.sim-btn.start {
-  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
-  color: white;
-}
-.sim-btn.start:hover {
-  background: linear-gradient(135deg, #34d399 0%, #10b981 100%);
-  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+/* =========================================
+   POLICE PATROL WIDGET (Modern & Dark Mode)
+   ========================================= */
+.police-widget-container {
+  position: fixed;
+  top: 90px;
+  right: 80px;
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(16px); /* Stronger blur */
+  -webkit-backdrop-filter: blur(16px);
+  padding: 10px 18px 10px 12px;
+  border-radius: 24px;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 0 0 1px rgba(0, 0, 0, 0.05); /* Soft border ring */
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  font-family: "Inter", sans-serif;
+  font-size: 13px;
+  z-index: 2000; /* High z-index */
+  transition: all 0.3s ease;
+  border: 1px solid rgba(255, 255, 255, 0.5);
 }
 
-.sim-btn.stop {
-  background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
-  color: white;
-}
-.sim-btn.stop:hover {
-  background: linear-gradient(135deg, #f87171 0%, #ef4444 100%);
-  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
-}
-
-.custom-ambulance-marker {
-  transition: all 0.5s linear;
-  z-index: 1000 !important;
+.pw-icon-box {
+  width: 40px;
+  height: 40px;
+  background: #eff6ff;
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 22px;
+  box-shadow: inset 0 0 0 1px rgba(59, 130, 246, 0.1);
 }
 
-@keyframes slideInUp {
-  from {
+.pw-content {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 2px;
+}
+
+.pw-title {
+  font-weight: 700;
+  color: #1e293b;
+  font-size: 14px;
+  letter-spacing: -0.01em;
+}
+
+.pw-subtitle {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: #64748b;
+  font-weight: 500;
+}
+
+.pw-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  display: block;
+}
+
+.pw-dot.status-active {
+  background: #10b981;
+  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.15);
+}
+.pw-dot.status-loading {
+  background: #f59e0b;
+  animation: ping 1.5s infinite;
+}
+
+@keyframes ping {
+  75%,
+  100% {
+    transform: scale(2);
     opacity: 0;
-    transform: translateY(20px);
   }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+}
+
+/* --- Dark Mode for Police Widget --- */
+[data-theme="dark"] .police-widget-container {
+  background: rgba(15, 23, 42, 0.85); /* Darker Slate */
+  border-color: rgba(255, 255, 255, 0.08);
+  box-shadow: 0 15px 30px -10px rgba(0, 0, 0, 0.5),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.05);
+}
+
+[data-theme="dark"] .pw-icon-box {
+  background: rgba(30, 41, 59, 0.8);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.1);
+}
+[data-theme="dark"] .pw-icon-box .pw-icon {
+  filter: drop-shadow(0 0 5px rgba(255, 255, 255, 0.2));
+}
+
+[data-theme="dark"] .pw-title {
+  color: #f8fafc;
+}
+
+[data-theme="dark"] .pw-subtitle {
+  color: #cbd5e1;
+}
+
+[data-theme="dark"] .pw-dot.status-active {
+  background: #34d399; /* Neon Green */
+  box-shadow: 0 0 10px rgba(52, 211, 153, 0.4);
 }

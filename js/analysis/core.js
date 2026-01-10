@@ -15,6 +15,15 @@ const AnalysisUtils = {
     predictionMethod: "road",
     predictionCache: { center: null, facilities: [], lines: [] },
     comparePoints: [],
+    markerRegistry: {}, // New: Store markers by FID
+  },
+
+  registerMarker(fid, marker) {
+    this.state.markerRegistry[fid] = marker;
+  },
+
+  getMarker(fid) {
+    return this.state.markerRegistry[fid];
   },
 
   init(map) {

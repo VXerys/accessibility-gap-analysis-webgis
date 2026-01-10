@@ -69,10 +69,24 @@ const GeoJSONLoader = {
     L.geoJSON(data, {
       style: this.getFeatureStyle,
       pointToLayer: (feature, latlng) => {
-        if (feature.geometry.type === "Point" && dataSource !== "map") {
+        // Generate Unique ID
+        if (!feature.properties.fid) {
+          feature.properties.fid =
+            "fac_" + Math.random().toString(36).substr(2, 9);
+        }
+
+        if (feature.geometry.type === "Point") {
           this.allFacilities.push(feature);
         }
-        return MarkerUtils.createMarker(feature, latlng, dataSource);
+
+        const marker = MarkerUtils.createMarker(feature, latlng, dataSource);
+
+        // Register Marker for deep linking
+        if (typeof AnalysisUtils !== "undefined") {
+          AnalysisUtils.registerMarker(feature.properties.fid, marker);
+        }
+
+        return marker;
       },
       onEachFeature: (feature, layer) => {
         if (
@@ -110,6 +124,47 @@ const GeoJSONLoader = {
       },
     };
 
+    // Kelurahan Specific Styling Logic
+    if (feature.properties && feature.properties.NAMOBJ) {
+      const name = feature.properties.NAMOBJ.toUpperCase();
+
+      switch (true) {
+        case name.includes("KARANGTENGAH"):
+          return {
+            color: "#a855f7", // Purple
+            weight: 2,
+            opacity: 1,
+            fillColor: "#c084fc",
+            fillOpacity: 0.4,
+          };
+        case name.includes("KARAMAT"):
+          return {
+            color: "#eab308", // Yellow Gold
+            weight: 2,
+            opacity: 1,
+            fillColor: "#fde047",
+            fillOpacity: 0.4,
+          };
+        case name.includes("GUNUNGPUYUH"):
+          return {
+            color: "#06b6d4", // Cyan
+            weight: 2,
+            opacity: 1,
+            fillColor: "#67e8f9",
+            fillOpacity: 0.4,
+          };
+        case name.includes("SRIWEDARI"):
+          return {
+            color: "#3b82f6", // Blue
+            weight: 2,
+            opacity: 1,
+            fillColor: "#93c5fd",
+            fillOpacity: 0.4,
+          };
+      }
+    }
+
+    // Default Fallback for Batas Kecamatan if logic above doesn't match
     if (feature.properties.BatasKecamatan) {
       return styles.BatasKecamatan;
     }
@@ -121,6 +176,7 @@ const GeoJSONLoader = {
       color: "#666",
       weight: 2,
       opacity: 0.7,
+      fillOpacity: 0.1,
     };
   },
 

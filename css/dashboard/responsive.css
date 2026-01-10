@@ -1,0 +1,113 @@
+/* MOBILE RESPONSIVENESS */
+@media (max-width: 768px) {
+  /* Dashboard Page Layout */
+  .dashboard-content-wrapper {
+    flex-direction: column;
+  }
+
+  /* Navbar */
+  .dashboard-navbar {
+    height: auto;
+    padding: 12px 16px;
+    flex-direction: column;
+    gap: 12px;
+    align-items: stretch;
+  }
+  .dash-brand {
+    justify-content: flex-start;
+  }
+  .dash-title h2 {
+    font-size: 1.1rem;
+  }
+  .dash-center-actions {
+    width: 100%;
+  }
+  .dash-right-actions {
+    display: flex;
+    width: 100%;
+    justify-content: space-between;
+  }
+  .dash-date-badge {
+    display: none;
+  }
+  .btn-dash-close {
+    width: 100%;
+    justify-content: center;
+  }
+
+  /* Sidebar -> Top Scroll Nav */
+  .dash-sidebar {
+    width: 100%;
+    max-width: 100vw;
+    height: auto;
+    border-right: none;
+    border-bottom: 1px solid #e2e8f0;
+    padding: 12px 16px;
+    gap: 12px;
+    overflow-x: auto;
+  }
+  .dash-profile {
+    display: none;
+  }
+  .dash-menu-group {
+    display: flex;
+    flex-direction: row;
+    gap: 8px;
+    margin: 0;
+  }
+  .dash-menu-label {
+    display: none;
+  }
+  .dash-menu-item {
+    padding: 8px 12px;
+    white-space: nowrap;
+    font-size: 0.85rem;
+    background: #f8fafc;
+    border-radius: 99px;
+  }
+  .dash-menu-item.active {
+    background: var(--primary-color);
+    color: white;
+  }
+
+  /* Main Content */
+  .dash-main-area {
+    padding: 16px;
+  }
+
+  /* Grids & Cards */
+  .dash-stats-row {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+  .dash-charts-section {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+  .analytics-grid {
+    grid-template-columns: 1fr;
+  }
+  .score-circle {
+    width: 100px;
+    height: 100px;
+    border-width: 6px;
+    margin-bottom: 16px;
+  }
+  .score-number {
+    font-size: 2.2rem;
+  }
+  .dash-grid-large {
+    grid-template-columns: 1fr;
+  }
+
+  /* Dark Mode Mobile */
+  [data-theme="dark"] .dash-sidebar {
+    border-bottom-color: rgba(255, 255, 255, 0.05);
+  }
+  [data-theme="dark"] .dash-menu-item {
+    background: rgba(255, 255, 255, 0.05);
+  }
+  [data-theme="dark"] .dash-menu-item.active {
+    background: var(--primary-color);
+  }
+}

@@ -1,55 +1,10 @@
 const ChatAssistant = {
-  apiKey:
-    window.ENV && window.ENV.GROQ_API_KEY
-      ? window.ENV.GROQ_API_KEY
-      : localStorage.getItem("groq_api_key") || "",
-  apiUrl: "https://api.groq.com/openai/v1/chat/completions",
-
   init(map) {
     this.map = map;
-    this.renderUI();
+    ChatEngine.setMap(map);
+    ChatUI.render();
     this.bindEvents();
-    console.log("🤖 Chat AI Assistant Initialized");
-  },
-
-  renderUI() {
-    const chatHTML = `
-            <div class="chat-widget-btn" id="chat-btn">
-                <span class="chat-icon">💬</span>
-            </div>
-    <div class="chat-window" id="chat-window">
-        <div class="chat-header">
-            <div class="chat-title">
-                <h3><span class="ai-status"></span> GIS Assistant</h3>
-            </div>
-            <button class="close-chat" id="close-chat">×</button>
-        </div>
-        <div class="chat-messages" id="chat-messages">
-            <div class="message ai">
-                Halo! Saya asisten AI Kecamatan Gunung Puyuh. 👋<br>
-                    Silakan tanya tentang:
-                    <ul style="margin-top:5px; padding-left:15px;">
-                        <li>Kepadatan Penduduk</li>
-                        <li>Prediksi Pertumbuhan (1-10 thn)</li>
-                        <li>Jarak & Fasilitas Terdekat</li>
-                        <li>Analisis Kesenjangan (Gap)</li>
-                    </ul>
-            </div>
-        </div>
-        <div class="typing-indicator" id="typing-indicator">
-            <div class="dots">
-                <div class="dot"></div>
-                <div class="dot"></div>
-                <div class="dot"></div>
-            </div>
-        </div>
-        <div class="chat-input-area">
-            <input type="text" class="chat-input" id="chat-input" placeholder="Tanya sesuatu tentang wilayah ini...">
-                <button class="send-btn" id="send-btn">➤</button>
-        </div>
-    </div>`;
-
-    document.body.insertAdjacentHTML("beforeend", chatHTML);
+    console.log("Chat AI Assistant Initialized");
   },
 
   bindEvents() {
@@ -66,9 +21,17 @@ const ChatAssistant = {
     }
 
     if (closeBtn && chatWindow) {
-      closeBtn.addEventListener("click", () =>
-        chatWindow.classList.remove("active")
-      );
+      closeBtn.addEventListener("click", () => {
+        chatWindow.classList.remove("active");
+        ChatEngine.clearPredictionZones();
+        ChatEngine.clearInteractiveMarkers();
+        if (
+          typeof AnalysisUtils !== "undefined" &&
+          AnalysisUtils.clearAnalysisLayers
+        ) {
+          AnalysisUtils.clearAnalysisLayers();
+        }
+      });
     }
 
     if (sendBtn) {
@@ -91,16 +54,14 @@ const ChatAssistant = {
   saveApiKey() {
     const input = document.getElementById("user-api-key-input");
     if (input && input.value.trim()) {
-      const key = input.value.trim();
-      this.apiKey = key;
-      localStorage.setItem("groq_api_key", key);
+      ChatEngine.setApiKey(input.value.trim());
       const btn = document.getElementById("save-api-key-btn");
       if (btn) {
         btn.textContent = "Tersimpan!";
         btn.disabled = true;
         btn.style.backgroundColor = "#10b981";
       }
-      this.addMessage(
+      ChatUI.addMessage(
         "✅ API Key berhasil disimpan. Silahkan kirim pesan Anda kembali.",
         "ai"
       );
@@ -112,161 +73,273 @@ const ChatAssistant = {
     const message = input.value.trim();
     if (!message) return;
 
-    this.addMessage(message, "user");
+    ChatUI.addMessage(message, "user");
     input.value = "";
 
-    if (!this.apiKey) {
-      this.apiKey = localStorage.getItem("groq_api_key") || "";
+    ChatEngine.clearPredictionZones();
+    ChatEngine.clearInteractiveMarkers();
+    if (
+      typeof AnalysisUtils !== "undefined" &&
+      AnalysisUtils.clearAnalysisLayers
+    ) {
+      AnalysisUtils.clearAnalysisLayers();
     }
 
-    if (!this.apiKey) {
-      this.addMessage(
-        `
-                ⚠️ <strong>API Key Diperlukan</strong><br>
-                Server tidak mendeteksi Environment Variable untuk API Key (biasa terjadi di GitHub Pages).<br>
-                Silakan masukkan <strong>Groq API Key</strong> Anda sendiri (Gratis):<br>
-                <div style="margin-top:8px; margin-bottom:5px;">
-                    <input type="password" id="user-api-key-input" placeholder="gsk_..." style="width:100%; padding:8px; border:1px solid #ccc; border-radius:4px; margin-bottom:8px; box-sizing:border-box;">
-                    <button id="save-api-key-btn" style="width:100%; padding:8px; background:#2563eb; color:white; border:none; border-radius:4px; cursor:pointer;">Simpan & Lanjutkan</button>
-                </div>
-                <small style="color:#64748b;">Key akan disimpan aman di LocalStorage browser Anda.</small>
-            `,
-        "ai"
-      );
+    let systemInjection = "";
+
+    const distanceMatch = message.match(
+      /(?:ukur|cek|lihat)?\s*jarak\s*(?:antara|dari)?\s+(.+?)\s+(?:ke|dengan|dan|sampai)\s+(.+)/i
+    );
+
+    if (distanceMatch) {
+      const locA = ChatEngine.findFacilityByName(distanceMatch[1].trim());
+      const locB = ChatEngine.findFacilityByName(distanceMatch[2].trim());
+
+      if (locA && locB) {
+        ChatUI.showTyping(true);
+        if (AnalysisUtils.setMode) AnalysisUtils.setMode("distance");
+
+        const latlngA = [
+          locA.geometry.coordinates[1],
+          locA.geometry.coordinates[0],
+        ];
+        const latlngB = [
+          locB.geometry.coordinates[1],
+          locB.geometry.coordinates[0],
+        ];
+
+        await AnalysisUtils.measureDistance(
+          [latlngA[1], latlngA[0]],
+          L.latLng(latlngA[0], latlngA[1])
+        );
+        await AnalysisUtils.measureDistance(
+          [latlngB[1], latlngB[0]],
+          L.latLng(latlngB[0], latlngB[1])
+        );
+
+        const bounds = L.latLngBounds([latlngA, latlngB]);
+        this.map.flyToBounds(bounds.pad(0.3), { duration: 1.5 });
+
+        const distMeters = L.latLng(latlngA[0], latlngA[1]).distanceTo(
+          L.latLng(latlngB[0], latlngB[1])
+        );
+        const distText =
+          distMeters > 1000
+            ? (distMeters / 1000).toFixed(2) + " km"
+            : Math.round(distMeters) + " meter";
+
+        systemInjection = `[SYSTEM ACTION]: Saya sudah melakukan pengukuran otomatis antara "${distanceMatch[1].trim()}" dan "${distanceMatch[2].trim()}". Jarak lurus: ${distText}. Tugas: Jawab user dengan jarak tersebut.`;
+      }
+    }
+
+    const isoMatch = message.match(
+      /(?:jangkauan|akses|radius|area layanan|buffer)\s+(?:dari|di|sekitar)?\s*(.+)/i
+    );
+    const isBuffer = /buffer|radius|area layanan/i.test(message);
+
+    if (isoMatch && !distanceMatch) {
+      const locName = isoMatch[1]
+        .replace(/waktu|menit|jalan kaki/gi, "")
+        .trim();
+      const loc = ChatEngine.findFacilityByName(locName);
+
+      if (loc) {
+        ChatUI.showTyping(true);
+        const mode = isBuffer ? "buffer" : "isochrone";
+        if (AnalysisUtils.setMode) AnalysisUtils.setMode(mode);
+
+        const latlng = L.latLng(
+          loc.geometry.coordinates[1],
+          loc.geometry.coordinates[0]
+        );
+        const point = [
+          loc.geometry.coordinates[0],
+          loc.geometry.coordinates[1],
+        ];
+
+        if (isBuffer)
+          AnalysisUtils.runIsochroneLogic(point, latlng, "distance");
+        else AnalysisUtils.runIsochroneLogic(point, latlng, "time");
+
+        this.map.flyTo(latlng, 15, { duration: 1.5 });
+        systemInjection = `[SYSTEM ACTION]: Analisis ${
+          isBuffer ? "Buffer" : "Isochrone"
+        } dijalankan untuk "${locName}". Hasil visual di peta.`;
+      }
+    }
+
+    const nearMatch = message.match(
+      /(?:fasilitas|sekolah|rs|puskesmas)\s+(?:terdekat|dekat)\s+(?:dari|di)?\s*(.+)/i
+    );
+    if (nearMatch && !distanceMatch) {
+      const locName = nearMatch[1].trim();
+      const loc = ChatEngine.findFacilityByName(locName);
+
+      if (loc) {
+        ChatUI.showTyping(true);
+        if (AnalysisUtils.setMode) AnalysisUtils.setMode("nearest");
+        const latlng = L.latLng(
+          loc.geometry.coordinates[1],
+          loc.geometry.coordinates[0]
+        );
+        const point = [
+          loc.geometry.coordinates[0],
+          loc.geometry.coordinates[1],
+        ];
+
+        AnalysisUtils.findNearestFacility(point, latlng);
+        this.map.flyTo(latlng, 16, { duration: 1.5 });
+        systemInjection = `[SYSTEM ACTION]: Fasilitas terdekat dari "${locName}" telah dicari. Rute ditampilkan di peta.`;
+      }
+    }
+
+    const layerResponse = ChatEngine.handleLayerControl(message);
+    if (layerResponse) {
+      ChatUI.addMessage(layerResponse, "ai");
+      ChatUI.showTyping(false);
       return;
     }
 
-    this.showTyping(true);
+    const isPredictionQuery =
+      /(prediksi|potensi|prospek|akan|masa depan|future|zona)/i.test(message) &&
+      /(penduduk|wilayah|padat|ramai|pemukiman|huni)/i.test(message);
 
-    try {
-      const context = this.gatherContext();
-      const response = await this.callGroqAPI(message, context);
-      this.addMessage(response, "ai");
-    } catch (error) {
-      console.error("Chat Error:", error);
-      this.addMessage(
-        `⚠️ <strong>Gagal Terhubung:</strong><br>${error.message}<br><small>Cek console untuk detail.</small>`,
-        "ai"
-      );
-    } finally {
-      this.showTyping(false);
-    }
-  },
+    const intents = [
+      {
+        regex: /(jarak|ukur|jauh)/i,
+        btnId: "distance-btn",
+        mode: "distance",
+        tool: "Ukur Jarak",
+      },
+      {
+        regex: /(top|terbanyak|ranking)/i,
+        btnId: "topN-btn",
+        mode: "topN",
+        autoRun: true,
+        tool: "Top 5",
+      },
+      {
+        regex: /(terdekat|dekat|cari)/i,
+        btnId: "nearest-btn",
+        mode: "nearest",
+        autoRun: true,
+        tool: "Nearest",
+      },
+      {
+        regex: /(jangkauan|waktu|iso)/i,
+        btnId: "isochrone-btn",
+        mode: "isochrone",
+        tool: "Isochrone",
+      },
+      {
+        regex: /(service|area|buffer)/i,
+        btnId: "iso-btn",
+        mode: "buffer",
+        tool: "Buffer",
+      },
+      {
+        regex: /(gap|kesenjangan)/i,
+        btnId: "gap-btn",
+        mode: "gap",
+        autoRun: true,
+        tool: "Gap Analysis",
+      },
+      {
+        regex: /(banding|komparasi)/i,
+        btnId: "compare-btn",
+        mode: "compare",
+        tool: "Compare",
+      },
+      {
+        regex: /(hapus|reset|clear)/i,
+        btnId: "clear-analysis",
+        mode: null,
+        tool: "Reset",
+      },
+    ];
 
-  gatherContext() {
-    const stats = typeof UIUtils !== "undefined" ? UIUtils.stats : {};
-    const area =
-      typeof GeoJSONLoader !== "undefined" && GeoJSONLoader.districtArea
-        ? GeoJSONLoader.districtArea
-        : "Belum terhitung";
-    let center = "Unknown";
-    let zoom = "Unknown";
-    if (this.map) {
-      const c = this.map.getCenter();
-      center = `${c.lat.toFixed(4)}, ${c.lng.toFixed(4)}`;
-      zoom = this.map.getZoom();
-    }
-    return `
-        CONTEXT DATA:
-        - Wilayah: Kecamatan Gunung Puyuh, Sukabumi
-        - Luas Wilayah Terhitung: ${area}
-        - Total Institusi Pendidikan: ${
-          stats.total - (stats.totalHealth || 0) || 0
+    if (isPredictionQuery) {
+      const zoneNames = ChatEngine.showPredictionZones();
+      systemInjection = `[SYSTEM EVENT]: Visualisasi prediksi ditampilkan di 3 lokasi: ${zoneNames}. Jelaskan potensi kepadatan.`;
+    } else {
+      for (const intent of intents) {
+        if (intent.regex.test(message)) {
+          if (intent.mode) {
+            if (AnalysisUtils.setMode) AnalysisUtils.setMode(intent.mode);
+          } else if (intent.btnId === "clear-analysis") {
+            if (AnalysisUtils.clearAnalysis) AnalysisUtils.clearAnalysis();
+          }
+
+          let shouldRun = intent.autoRun;
+          if (systemInjection) shouldRun = false;
+
+          if (shouldRun && this.map) {
+            const center = this.map.getCenter();
+            const point = [center.lng, center.lat];
+            setTimeout(() => {
+              if (intent.mode === "topN" && AnalysisUtils.findTop5Hotspots)
+                AnalysisUtils.findTop5Hotspots(point, center);
+              if (
+                intent.mode === "nearest" &&
+                AnalysisUtils.findNearestFacility
+              )
+                AnalysisUtils.findNearestFacility(point, center);
+              if (intent.mode === "gap" && AnalysisUtils.gapAnalysis)
+                AnalysisUtils.gapAnalysis(point, center);
+            }, 500);
+
+            if (intent.mode === "topN")
+              systemInjection = `[SYSTEM]: Top 5 dijalankan. Fokus ranking & juara. Jangan prediksi.`;
+            else if (intent.mode === "gap")
+              systemInjection = `[SYSTEM]: Gap Analysis dijalankan. Fokus underserved & blank spot.`;
+            else
+              systemInjection = `[SYSTEM]: Tool ${intent.tool} aktif di tengah peta.`;
+          }
+          break;
         }
-          (SD: ${stats.sd || 0}, SMP: ${stats.smp || 0}, SMA: ${
-      stats.sma || 0
-    }, Univ: ${stats.universitas || 0})
-        - Total Fasilitas Kesehatan: ${stats.totalHealth || 0}
-          (RS: ${stats.rumahSakit || 0}, Puskesmas: ${
-      stats.puskesmas || 0
-    }, Klinik: ${stats.klinik || 0})
-        - Posisi Peta Saat Ini: ${center} (Zoom: ${zoom})
-        
-        PREDICTION RULES (Use these logic):
-        1. Jarak < 0.5km ke fasilitas: Pertumbuhan "Sangat Tinggi" (1-2 thn). Area kosan/kuliner.
-        2. Jarak 0.5 - 1.5km: "Sedang-Tinggi" (3-5 thn). Area hunian sewa/apotek.
-        3. Jarak 1.5 - 3.0km: "Rendah-Sedang" (5-10 thn). Perumahan umum.
-        4. Jarak > 3.0km: "Rendah". Lahan hijau/pertanian.
-        
-        Keberadaan Universitas memicu kos-kosan.
-        Keberadaan RS memicu apotek/penginapan.
-        Keberadaan Sekolah memicu hunian keluarga muda.
-        `;
-  },
+      }
+    }
 
-  async callGroqAPI(userMessage, context) {
-    if (!this.apiKey) throw new Error("API Key tidak ditemukan.");
-    const systemPrompt = `
-        Kamu adalah Asisten GeoAI Ahli untuk WebGIS Analisis Kesenjangan Aksesibilitas di Kecamatan Gunung Puyuh.
-        Tugasmu adalah menjawab pertanyaan pengguna tentang data spasial, fasilitas, dan prediksi wilayah.
-        
-        Gunakan data berikut sebagai fakta dasar:
-        ${context}
+    if (!ChatEngine.getApiKey()) {
+      ChatUI.showApiKeyPrompt();
+      return;
+    }
 
-        PENTING:
-        - Jika ditanya prediksi, gunakan logika dari data yang tersedia untuk menalar.
-        - Jawab dengan bahasa Indonesia yang profesional, ramah, dan ringkas.
-        - JANGAN menyebutkan kata "PREDICTION RULES", "CONTEXT DATA", atau istilah teknis internal lainnya.
-        - Jelaskan seolah-olah Anda adalah ahli tata kota yang berbicara langsung kepada warga.
-        - Gunakan format markdown (bold, list) agar mudah dibaca.
-        `;
+    ChatUI.showTyping(true);
 
     try {
-      const response = await fetch(this.apiUrl, {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${this.apiKey}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          model: "llama-3.3-70b-versatile",
-          messages: [
-            { role: "system", content: systemPrompt },
-            { role: "user", content: userMessage },
-          ],
-          temperature: 0.5,
-          max_tokens: 1024,
-        }),
-      });
+      const context = ChatEngine.gatherContext() + systemInjection;
+      const rawResponse = await ChatEngine.callGroqAPI(message, context);
+      const { text, location, command } =
+        ChatEngine.processAIResponse(rawResponse);
 
-      if (!response.ok) {
-        const errData = await response.json().catch(() => ({}));
-        throw new Error(
-          `API Error ${response.status}: ${
-            errData.error?.message || response.statusText
-          }`
-        );
-      }
+      ChatUI.addMessage(text, "ai");
 
-      const data = await response.json();
-      return data.choices[0].message.content;
-    } catch (err) {
-      if (err.name === "TypeError" && err.message === "Failed to fetch") {
-        throw new Error(
-          "Koneksi ditolak (CORS/Network). Pastikan Anda menggunakan HTTPS atau Localhost."
-        );
+      if (command === "PREDICTION") ChatEngine.showPredictionZones();
+
+      if (location && this.map) {
+        const facility = ChatEngine.findFacilityByName(location);
+        if (facility) {
+          const [lng, lat] = facility.geometry.coordinates;
+          this.map.flyTo([lat, lng], 17, { duration: 1.5 });
+          const marker = L.circleMarker([lat, lng], {
+            radius: 20,
+            color: "#ef4444",
+            fill: false,
+            weight: 4,
+            dashArray: "5,5",
+          })
+            .addTo(this.map)
+            .bindPopup(text)
+            .openPopup();
+          ChatEngine.activeMarkers.push(marker);
+        }
       }
-      throw err;
+    } catch (error) {
+      console.error(error);
+      ChatUI.addMessage(`⚠️ Error: ${error.message}`, "ai");
+    } finally {
+      ChatUI.showTyping(false);
     }
-  },
-
-  addMessage(text, type) {
-    const container = document.getElementById("chat-messages");
-    const div = document.createElement("div");
-    div.className = `message ${type}`;
-    let formattedText = text
-      .replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>")
-      .replace(/\n/g, "<br>");
-    div.innerHTML = formattedText;
-    container.appendChild(div);
-    container.scrollTop = container.scrollHeight;
-  },
-
-  showTyping(show) {
-    const indicator = document.getElementById("typing-indicator");
-    if (show) indicator.classList.add("active");
-    else indicator.classList.remove("active");
-    const container = document.getElementById("chat-messages");
-    container.scrollTop = container.scrollHeight;
   },
 };

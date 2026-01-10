@@ -49,9 +49,9 @@ const PolicePatrolSimulation = {
         this.calculateFullLoop(waypoints3),
       ]);
 
-      this.createCar(0, path1, "Unit Pusat");
-      this.createCar(1, path2, "Unit Utara");
-      this.createCar(2, path3, "Unit Selatan");
+      this.createCar(0, path1, "Unit Pusat", "0811-1234-5678");
+      this.createCar(1, path2, "Unit Utara", "0812-9876-5432");
+      this.createCar(2, path3, "Unit Selatan", "0813-5555-8888");
 
       this.state.loading = false;
       this.updateStatusWidget("Patroli Aktif: 3 Unit", "#1e40af");
@@ -91,7 +91,7 @@ const PolicePatrolSimulation = {
     return fullPath;
   },
 
-  createCar(id, path, label) {
+  createCar(id, path, label, phoneNumber) {
     if (!path || path.length === 0) return;
 
     const policeIcon = L.divIcon({
@@ -106,7 +106,13 @@ const PolicePatrolSimulation = {
       zIndexOffset: 1000,
     }).addTo(this.map);
 
-    marker.bindPopup(`<strong>${label}</strong><br>Status: Patroli Rutin`);
+    marker.bindPopup(`
+      <div style="text-align:center;">
+        <strong style="font-size:14px; color:#1e40af;">${label}</strong><br>
+        <span style="font-size:12px; color:#475569;">Status: Patroli Rutin</span><br>
+        <span style="font-size:12px; font-weight:600; color:#10b981;">📞 ${phoneNumber}</span>
+      </div>
+    `);
 
     this.state.cars.push({
       id: id,
@@ -158,28 +164,10 @@ const PolicePatrolSimulation = {
     if (!widget) {
       widget = document.createElement("div");
       widget.id = "police-widget";
+      widget.className = "police-widget-container"; // Use CSS class
+
       const mapWrapper = document.querySelector(".map-wrapper");
       const container = mapWrapper || document.body;
-
-      Object.assign(widget.style, {
-        position: "fixed",
-        bottom: "35px",
-        right: "100px",
-        top: "auto",
-        left: "auto",
-        transform: "none",
-        background: "white",
-        padding: "8px 15px",
-        borderRadius: "50px",
-        boxShadow: "0 4px 15px rgba(0,0,0,0.1)",
-        display: "flex",
-        alignItems: "center",
-        gap: "10px",
-        fontFamily: "'Poppins', sans-serif",
-        fontSize: "13px",
-        zIndex: "1000",
-        border: `2px solid ${color}`,
-      });
       container.appendChild(widget);
     }
 
@@ -189,21 +177,26 @@ const PolicePatrolSimulation = {
   updateStatusWidget(text, color) {
     const widget = document.getElementById("police-widget");
     if (widget) {
-      widget.style.borderColor = color;
       this.updateWidgetContent(widget, text, color);
     }
   },
 
   updateWidgetContent(widget, text, color) {
+    const statusClass = this.state.loading ? "status-loading" : "status-active";
+    const statusText = this.state.loading
+      ? "Mengontak Satelit..."
+      : "Monitoring Aktif";
+
     widget.innerHTML = `
-            <span style="font-size:16px;">👮</span>
-            <div>
-                <div style="font-weight:700; color:${color};">${text}</div>
-                 ${
-                   this.state.loading
-                     ? '<div style="font-size:10px; color:#666;">Mengontak Satelit...</div>'
-                     : '<div style="font-size:10px; color:#666;">Monitoring Wilayah (Slow)</div>'
-                 }
+            <div class="pw-icon-box">
+                <div class="pw-icon">🚓</div>
+            </div>
+            <div class="pw-content">
+                <div class="pw-title">${text}</div>
+                <div class="pw-subtitle">
+                    <span class="pw-dot ${statusClass}"></span>
+                    ${statusText}
+                </div>
             </div>
         `;
   },

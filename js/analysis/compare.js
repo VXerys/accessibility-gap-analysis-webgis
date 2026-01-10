@@ -34,7 +34,7 @@ Object.assign(AnalysisUtils, {
         .bindPopup("<b>Titik A</b>")
         .openPopup();
       L.circle(latlng, {
-        radius: 1000,
+        radius: 500,
         color: "#007bff",
         dashArray: "5, 10",
         fillColor: "#007bff",
@@ -56,7 +56,7 @@ Object.assign(AnalysisUtils, {
         .bindPopup("<b>Titik B</b>")
         .openPopup();
       L.circle(latlng, {
-        radius: 1000,
+        radius: 500,
         color: "#dc3545",
         dashArray: "5, 10",
         fillColor: "#dc3545",
@@ -84,25 +84,97 @@ Object.assign(AnalysisUtils, {
         winnerColor = "#6f42c1";
       }
       this.showResults(`
-              <div class="result-item" style="border-top: 5px solid ${winnerColor}">
-                  <h4 style="margin:0 0 15px 0; color:${winnerColor}; text-align:center;">${winnerText}</h4>
-                  <div style="display:flex; gap:10px; margin-bottom:15px;">
-                      <div style="flex:1; background:#f0f7ff; padding:10px; border-radius:8px; border:1px solid #cce5ff; text-align:center;">
-                          <div style="font-weight:700; color:#007bff; margin-bottom:5px;">Lokasi A</div>
-                          <div style="font-size:2em; font-weight:800; color:#333; line-height:1;">${resultA.score}</div>
-                          <div style="font-size:0.7em; color:#666; margin-bottom:8px;">Skor Potensi</div>
-                          <div style="font-size:0.75em; text-align:left; border-top:1px solid #ddd; padding-top:5px; color:#555;"><strong>Terdekat:</strong><br>${resultA.nearestName}<br>(${resultA.nearestDist} km)</div>
+          <div class="modern-result-card">
+              <div style="text-align:center; margin-bottom:20px;">
+                   <div style="font-size:0.85em; text-transform:uppercase; letter-spacing:1px; color:#64748b; font-weight:600; margin-bottom:4px;">HASIL ANALISIS PERBANDINGAN</div>
+                   <h3 style="margin:0; font-size:1.2rem; display:flex; align-items:center; justify-content:center; gap:10px; color:${winnerColor}">
+                        <i class="ph-duotone ph-trophy" style="font-size:1.4em;"></i> ${winnerText}
+                   </h3>
+              </div>
+              
+              <div style="display:grid; grid-template-columns: 1fr 1fr; gap:16px; margin-bottom:24px;">
+                  <!-- CARD A -->
+                  <div style="background:#f8fafc; border-radius:12px; padding:16px; border:1px solid ${
+                    resultA.score > resultB.score ? "#3b82f6" : "#e2e8f0"
+                  }; position:relative; overflow:hidden;">
+                      ${
+                        resultA.score > resultB.score
+                          ? '<div style="position:absolute; top:0; left:0; right:0; height:4px; background:#3b82f6;"></div>'
+                          : ""
+                      }
+                      <div style="text-align:center; margin-bottom:12px;">
+                          <div style="font-weight:700; color:#3b82f6; margin-bottom:4px;">LOKASI A</div>
+                          <div style="font-size:2rem; font-weight:800; color:#1e293b; line-height:1;">${
+                            resultA.score
+                          }</div>
+                          <div style="font-size:0.75rem; color:#64748b; font-weight:500;">SKOR POTENSI</div>
                       </div>
-                      <div style="flex:1; background:#fff0f1; padding:10px; border-radius:8px; border:1px solid #f5c6cb; text-align:center;">
-                          <div style="font-weight:700; color:#dc3545; margin-bottom:5px;">Lokasi B</div>
-                          <div style="font-size:2em; font-weight:800; color:#333; line-height:1;">${resultB.score}</div>
-                          <div style="font-size:0.7em; color:#666; margin-bottom:8px;">Skor Potensi</div>
-                          <div style="font-size:0.75em; text-align:left; border-top:1px solid #ddd; padding-top:5px; color:#555;"><strong>Terdekat:</strong><br>${resultB.nearestName}<br>(${resultB.nearestDist} km)</div>
+                      
+                      <div style="border-top:1px solid #cbd5e1; padding-top:12px;">
+                           <div style="font-size:0.75rem; color:#64748b; margin-bottom:2px;">Fasilitas Terdekat:</div>
+                           <div style="font-size:0.85rem; font-weight:600; color:#334155; line-height:1.3; margin-bottom:4px;">${
+                             resultA.nearestName
+                           }</div>
+                           <div style="font-size:0.8rem; color:#475569; display:flex; align-items:center; gap:4px;">
+                                <i class="ph-bold ph-ruler"></i> ${
+                                  resultA.nearestDist
+                                } km
+                           </div>
                       </div>
                   </div>
-                  <div style="font-size:0.85em; background:#f8f9fa; padding:12px; border-radius:8px; color:#555; line-height:1.5; border:1px solid #eee;"><strong>Analisis:</strong><br>Lokasi dengan skor lebih tinggi memiliki aksesibilitas lebih baik ke fasilitas pendidikan dan kesehatan dalam radius 1 KM.</div>
-                  <button onclick="AnalysisUtils.resetCompare()" style="width:100%; margin-top:15px; padding:10px; background:#666; color:white; border:none; border-radius:6px; font-weight:600; cursor:pointer;">Ulangi Perbandingan</button>
-              </div>`);
+
+                  <!-- CARD B -->
+                  <div style="background:#f8fafc; border-radius:12px; padding:16px; border:1px solid ${
+                    resultB.score > resultA.score ? "#ef4444" : "#e2e8f0"
+                  }; position:relative; overflow:hidden;">
+                      ${
+                        resultB.score > resultA.score
+                          ? '<div style="position:absolute; top:0; left:0; right:0; height:4px; background:#ef4444;"></div>'
+                          : ""
+                      }
+                      <div style="text-align:center; margin-bottom:12px;">
+                          <div style="font-weight:700; color:#ef4444; margin-bottom:4px;">LOKASI B</div>
+                          <div style="font-size:2rem; font-weight:800; color:#1e293b; line-height:1;">${
+                            resultB.score
+                          }</div>
+                          <div style="font-size:0.75rem; color:#64748b; font-weight:500;">SKOR POTENSI</div>
+                      </div>
+                      
+                      <div style="border-top:1px solid #cbd5e1; padding-top:12px;">
+                           <div style="font-size:0.75rem; color:#64748b; margin-bottom:2px;">Fasilitas Terdekat:</div>
+                           <div style="font-size:0.85rem; font-weight:600; color:#334155; line-height:1.3; margin-bottom:4px;">${
+                             resultB.nearestName
+                           }</div>
+                           <div style="font-size:0.8rem; color:#475569; display:flex; align-items:center; gap:4px;">
+                                <i class="ph-bold ph-ruler"></i> ${
+                                  resultB.nearestDist
+                                } km
+                           </div>
+                      </div>
+                  </div>
+              </div>
+
+              <div class="highlight-box" style="margin-bottom:20px;">
+                  <div style="display:flex; gap:10px;">
+                      <i class="ph-fill ph-check-circle" style="color:var(--primary-color); font-size:1.2rem; margin-top:2px;"></i>
+                      <div>
+                          <div style="font-weight:600; color:#1e293b; margin-bottom:4px;">Rekomendasi Strategis</div>
+                          <div class="highlight-desc" style="margin:0;">
+                              Berdasarkan analisis aksesibilitas radius 500m, 
+                              ${
+                                resultA.score > resultB.score
+                                  ? "<strong>Lokasi A</strong> lebih unggul karena memiliki kedekatan agregat yang lebih baik ke fasilitas layanan publik."
+                                  : "<strong>Lokasi B</strong> lebih unggul karena memiliki kedekatan agregat yang lebih baik ke fasilitas layanan publik."
+                              }
+                          </div>
+                      </div>
+                  </div>
+              </div>
+
+              <button class="btn-action-full" style="width:100%; display:flex; align-items:center; justify-content:center; gap:8px; padding:12px; background:#f1f5f9; color:#475569; border:none; border-radius:8px; font-weight:600; cursor:pointer; transition:all 0.2s;" onclick="AnalysisUtils.resetCompare()" onmouseover="this.style.background='#e2e8f0';" onmouseout="this.style.background='#f1f5f9';">
+                  <i class="ph-bold ph-arrow-counter-clockwise"></i> Reset Perbandingan
+              </button>
+          </div>`);
       this.state.comparePoints = [];
       UIUtils.hideLoading();
     }

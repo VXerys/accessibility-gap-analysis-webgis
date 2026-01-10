@@ -7,8 +7,10 @@ const MapInitializer = {
         minZoom: MapConfig.minZoom,
         maxZoom: MapConfig.maxZoom,
         zoomControl: false,
+        attributionControl: false, // Hide default to move it
       });
 
+      // Restore Zoom Control
       L.control
         .zoom({
           position: MapConfig.controls.zoom,
@@ -25,6 +27,14 @@ const MapInitializer = {
           position: MapConfig.controls.scale,
           metric: true,
           imperial: false,
+        })
+        .addTo(map);
+
+      // Add Attribution LAST so it sits to the RIGHT of Scale in Flexbox
+      L.control
+        .attribution({
+          position: "bottomleft",
+          prefix: false,
         })
         .addTo(map);
 
@@ -82,12 +92,51 @@ const MapInitializer = {
   },
 
   addLayerControl(map, baseMaps, overlayMaps) {
-    L.control
+    const layerControl = L.control
       .layers(baseMaps, overlayMaps, {
         position: MapConfig.controls.layers,
-        collapsed: false,
+        collapsed: true,
       })
       .addTo(map);
+
+    // Custom "Click to Toggle" Logic (Disabling Hover)
+    const container = layerControl.getContainer();
+
+    // 1. Disable default Leaflet Hover listeners
+    L.DomEvent.off(container, "mouseenter", layerControl.expand, layerControl);
+    L.DomEvent.off(
+      container,
+      "mouseleave",
+      layerControl.collapse,
+      layerControl
+    );
+
+    // 2. Add Click Listener to Toggle
+    const toggleBtn = container.querySelector(".leaflet-control-layers-toggle");
+    L.DomEvent.disableClickPropagation(container); // Prevent map clicks
+
+    let isExpanded = false;
+
+    L.DomEvent.on(toggleBtn, "click", (e) => {
+      L.DomEvent.stop(e);
+      if (isExpanded) {
+        layerControl.collapse();
+        isExpanded = false;
+      } else {
+        layerControl.expand();
+        isExpanded = true;
+      }
+    });
+
+    // 3. Close when clicking map
+    map.on("click", () => {
+      if (isExpanded) {
+        layerControl.collapse();
+        isExpanded = false;
+      }
+    });
+
+    // 4. Ensure clicking inside the list doesn't close it immediately (handled by stopPropagation above)
   },
 };
 

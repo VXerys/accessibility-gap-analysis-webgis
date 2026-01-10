@@ -16,7 +16,8 @@
     {
       "type": "Feature",
       "properties": {
-        "SDN": "SDN Karamat Randu"
+        "SDN": "SDN Karamat Randu",
+        "Foto": "img/sd/sdn_karamat_randu.png"
       },
       "geometry": {
         "type": "Point",
@@ -182,7 +183,8 @@
     {
       "type": "Feature",
       "properties": {
-        "SDN": "SDN Ciseureuh"
+        "SDN": "SDN Ciseureuh",
+        "Foto": "img/sd/sdn_ciseureuh.png"
       },
       "geometry": {
         "type": "Point",
@@ -229,7 +231,8 @@
     {
       "type": "Feature",
       "properties": {
-        "SDN": "SDN Babakan Karamat"
+        "SDN": "SDN Babakan Karamat",
+        "Foto": "img/sd/sdn_babakan_karamat.png"
       },
       "geometry": {
         "type": "Point",
@@ -240,7 +243,8 @@
     {
       "type": "Feature",
       "properties": {
-        "SDN": "SDN Kota Paris"
+        "SDN": "SDN Kota Paris",
+        "Foto": "img/sd/sdn_kota_paris.png"
       },
       "geometry": {
         "type": "Point",

@@ -2,481 +2,913 @@
 <html lang="id">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Peta GIS Kecamatan Gunung Puyuh - Sukabumi</title>
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+    />
+    <title>Analisis Kesenjangan Aksesibilitas Fasilitas Pendidikan & Kesehatan - Kec. Gunung Puyuh</title>
     <meta
       name="description"
-      content="Peta interaktif sistem informasi geografis lokasi pendidikan di Kecamatan Gunung Puyuh, Sukabumi"
+      content="Analisis Kesenjangan Aksesibilitas Fasilitas Pendidikan dan Kesehatan di Kecamatan Gunung Puyuh: Dampak Urbanisasi Cepat terhadap Pemerataan Layanan Publik"
     />
-    <meta
-      name="keywords"
-      content="peta, GIS, Gunung Puyuh, Sukabumi, sekolah, pendidikan"
-    />
-    <meta name="author" content="Kecamatan Gunung Puyuh" />
+
+    <!-- Favicon -->
     <link
       rel="icon"
       type="image/svg+xml"
-      href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E🗺️%3C/text%3E%3C/svg%3E"
+      href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%232563eb'%3E%3Cpath d='M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z'/%3E%3C/svg%3E"
     />
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Poppins:wght@500;600&display=swap"
+      rel="stylesheet"
+    />
+
+    <!-- Icons -->
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+
+    <!-- Leaflet & GIS Libraries -->
     <link
       rel="stylesheet"
       href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
       integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
       crossorigin=""
     />
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
-      rel="stylesheet"
-    />
+
+    <!-- CSS Modules -->
     <link rel="stylesheet" href="css/variables.css" />
     <link rel="stylesheet" href="css/splash.css" />
-    <link rel="stylesheet" href="css/header.css" />
     <link rel="stylesheet" href="css/map.css" />
+    <link rel="stylesheet" href="css/layers.css" />
+    <link rel="stylesheet" href="css/header.css" />
     <link rel="stylesheet" href="css/info-panel.css" />
-    <link rel="stylesheet" href="css/info-panel-content.css" />
     <link rel="stylesheet" href="css/components.css" />
+    <link rel="stylesheet" href="css/analysis/main.css" />
+    <link rel="stylesheet" href="css/analysis/dock.css" />
+    <link rel="stylesheet" href="css/analysis/results.css" />
+    <link rel="stylesheet" href="css/analysis/mobile.css" />
+    <link rel="stylesheet" href="css/info-panel-content.css" />
+    <link rel="stylesheet" href="css/dashboard/main.css" />
+    <link rel="stylesheet" href="css/dashboard/components.css" />
+    <link rel="stylesheet" href="css/dashboard/responsive.css" />
+    <link rel="stylesheet" href="css/landing.css" />
     <link rel="stylesheet" href="css/footer.css" />
-    <link rel="stylesheet" href="css/animations.css" />
-    <link rel="stylesheet" href="css/analysis.css" />
     <link rel="stylesheet" href="css/chat.css" />
     <link rel="stylesheet" href="css/simulation.css" />
+    <link rel="stylesheet" href="css/animations.css" />
   </head>
   <body>
+    <!-- Splash Screen -->
     <div id="splash-screen" class="splash-screen">
       <div class="splash-content">
-        <div class="splash-icon">🗺️</div>
-        <h1 class="splash-title">WebGIS</h1>
-        <p class="splash-subtitle">Aksesibilitas Fasilitas Pendidikan</p>
+        <div class="splash-brand">
+          <i class="ph-fill ph-map-trifold"></i>
+        </div>
+        <div class="splash-text-group">
+          <h1 class="splash-title">Analisis Kesenjangan Aksesibilitas</h1>
+          <p class="splash-subtitle">Fasilitas Pendidikan & Kesehatan</p>
+        </div>
         <div class="splash-loader">
           <div class="loader-bar"></div>
         </div>
-        <p class="splash-text">Memuat aplikasi...</p>
       </div>
     </div>
-    <header class="header">
-      <div class="header-container">
-        <div class="header-brand">
-          <div class="header-icon">🗺️</div>
-          <div class="header-text">
-            <h1 class="header-title">
-              WebGIS Aksesibilitas Fasilitas Pendidikan
+
+    <!-- Landing Page (Hero Section) -->
+    <section id="landing-page" class="landing-page active">
+      <div class="landing-bg-decoration">
+        <div class="decoration-grid"></div>
+      </div>
+
+      <div class="landing-container">
+        <!-- LEFT COLUMN: Intro & Navigation -->
+        <div class="landing-col-left">
+          <div class="hero-text-group">
+            <div class="hero-badge">
+              <i class="ph-fill ph-sparkle"></i>
+              WebGIS Gunung Puyuh 2026
+            </div>
+            <h1 class="hero-title">
+              Analisis Kesenjangan Aksesibilitas<br />
+              Fasilitas Pendidikan & Kesehatan
             </h1>
-            <p class="header-subtitle">
-              Kecamatan Gunung Puyuh - Sukabumi, Jawa Barat
+            <p class="hero-description">
+              Studi Kasus Kecamatan Gunung Puyuh: Dampak Urbanisasi Cepat
+              terhadap Pemerataan Layanan Publik. Platform interaktif untuk
+              mengidentifikasi area <i>under-served</i> dan merekomendasikan
+              lokasi optimal fasilitas baru.
             </p>
-            <div class="header-tags">
-              <span class="tag tag-primary">📊 Analisis Spasial</span>
-              <span class="tag tag-secondary">🎯 Urban Sprawl</span>
-              <span class="tag tag-accent">📍 Gap Analysis</span>
+            <div class="hero-actions">
+              <button
+                class="btn-primary-lg"
+                onclick="UIUtils.startExploration()"
+              >
+                <i class="ph-bold ph-compass"></i>
+                Mulai Jelajahi Peta
+              </button>
+              <button
+                class="btn-secondary-lg"
+                onclick="UIUtils.navigateToLandingTab('tab-objectives')"
+              >
+                Pelajari Lebih Lanjut
+              </button>
             </div>
+          </div>
+
+          <!-- Tab Navigation (Pills) -->
+          <div class="landing-tabs-nav">
+            <button
+              class="tab-pill active"
+              onclick="UIUtils.switchTab(this, 'tab-problem')"
+            >
+              <i class="ph-duotone ph-warning-octagon"></i> Latar Belakang
+            </button>
+            <button
+              class="tab-pill"
+              onclick="UIUtils.switchTab(this, 'tab-objectives')"
+            >
+              <i class="ph-duotone ph-target"></i> Tujuan & Solusi
+            </button>
+            <button
+              class="tab-pill"
+              onclick="UIUtils.switchTab(this, 'tab-benefits')"
+            >
+              <i class="ph-duotone ph-users-three"></i> Manfaat
+            </button>
           </div>
         </div>
-        <div class="header-stats">
-          <div class="stat-card stat-primary">
-            <span class="stat-icon">🏫</span>
-            <div class="stat-info">
-              <span class="stat-number" id="total-schools">0</span>
-              <span class="stat-label">Total Institusi</span>
+
+        <!-- RIGHT COLUMN: Visuals & Content Card -->
+        <div class="landing-col-right">
+          <div class="content-display-card">
+            <!-- Visual Image -->
+            <div class="visual-wrapper">
+              <img
+                src="assets/gunung-puyuh-real.jpg"
+                alt="Foto Asli Kantor Kecamatan Gunung Puyuh"
+                class="landing-visual"
+              />
             </div>
-          </div>
-          <div class="stat-card stat-success">
-            <span class="stat-icon">📍</span>
-            <div class="stat-info">
-              <span class="stat-number" id="total-locations">...</span>
-              <span class="stat-label">Luas Wilayah</span>
-            </div>
-          </div>
-          <div class="stat-card stat-info">
-            <span class="stat-icon">⏰</span>
-            <div class="stat-info">
-              <span class="stat-number" id="realtime-clock">--:-- WIB</span>
-              <span class="stat-label">Waktu Realtime</span>
+
+            <!-- Dynamic Tab Content -->
+            <!-- Dynamic Tab Content -->
+            <div class="landing-tab-contents">
+              <!-- Tab 1: Problem Statement -->
+              <div id="tab-problem" class="tab-content active">
+                <h3>Isu Strategis & Masalah Utama</h3>
+                <p>
+                  Kecamatan Gunung Puyuh menghadapi tantangan
+                  <strong>Distribusi Tidak Merata</strong> dan
+                  <strong>Kesenjangan Aksesibilitas</strong>. Fasilitas publik
+                  terkonsentrasi di pusat, menyebabkan:
+                </p>
+                <ul
+                  style="
+                    line-height: 1.6;
+                    color: var(--text-secondary);
+                    padding-left: 20px;
+                    margin-bottom: 20px;
+                  "
+                >
+                  <li>
+                    <strong>Overcapacity:</strong> Antrian panjang dan kelas
+                    penuh di pusat kecamatan.
+                  </li>
+                  <li>
+                    <strong>Under-served Areas:</strong> Kelurahan
+                    pinggiran/baru minim fasilitas.
+                  </li>
+                  <li>
+                    <strong>Resiko Darurat:</strong> Waktu tempuh >15 menit ke
+                    faskes terdekat.
+                  </li>
+                </ul>
+                <div class="feature-cards">
+                  <div class="f-card">
+                    <i class="ph-duotone ph-trend-up"></i>
+                    <h4>Urbanisasi Cepat</h4>
+                    <p>Ketimpangan supply & demand.</p>
+                  </div>
+                  <div class="f-card">
+                    <i class="ph-duotone ph-users"></i>
+                    <h4>Kesenjangan Sosial</h4>
+                    <p>Beban biaya transportasi tinggi.</p>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Tab 2: Objectives & Features -->
+              <div id="tab-objectives" class="tab-content">
+                <h3>Tujuan Penelitian</h3>
+                <p>
+                  <strong>Tujuan Utama:</strong><br />
+                  Mengidentifikasi dan menganalisis kesenjangan aksesibilitas
+                  fasilitas pendidikan dan kesehatan menggunakan analisis
+                  spasial berbasis SIG untuk memberikan rekomendasi perencanaan
+                  pembangunan infrastruktur yang merata.
+                </p>
+                <p style="margin-bottom: 8px">
+                  <strong>Tujuan Khusus:</strong>
+                </p>
+                <ul
+                  style="
+                    line-height: 1.6;
+                    color: var(--text-secondary);
+                    padding-left: 20px;
+                  "
+                >
+                  <li>
+                    ✅ Memetakan distribusi spasial fasilitas pendidikan &
+                    kesehatan.
+                  </li>
+                  <li>
+                    ✅ Menganalisis zona jangkauan layanan (isochrone 5-10-15
+                    menit).
+                  </li>
+                  <li>
+                    ✅ Mengidentifikasi kelurahan yang
+                    <em>under-served</em> berdasarkan gap analysis.
+                  </li>
+                  <li>
+                    ✅ Menghitung rasio ketersediaan fasilitas vs standar
+                    nasional.
+                  </li>
+                  <li>
+                    ✅ Memberikan rekomendasi lokasi optimal untuk fasilitas
+                    baru.
+                  </li>
+                </ul>
+              </div>
+
+              <!-- Tab 3: Benefits -->
+              <div id="tab-benefits" class="tab-content">
+                <h3>Manfaat Penelitian</h3>
+                <p>
+                  Sistem informasi ini memberikan dampak strategis bagi berbagai
+                  pemangku kepentingan:
+                </p>
+                <ul
+                  style="
+                    line-height: 1.8;
+                    color: var(--text-secondary);
+                    padding-left: 20px;
+                  "
+                >
+                  <li>
+                    <strong>🏛️ Pemerintah:</strong> Justifikasi anggaran &
+                    perencanaan berbasis data objektif.
+                  </li>
+                  <li>
+                    <strong>👨‍👩‍👧 Ke Masyarakat:</strong> Transparansi informasi &
+                    kemudahan akses layanan.
+                  </li>
+                  <li>
+                    <strong>🏗️ Developer:</strong> Panduan lokasi fasilitas
+                    untuk standar perumahan baru.
+                  </li>
+                </ul>
+              </div>
             </div>
           </div>
         </div>
       </div>
-    </header>
-    <main class="main-content">
-      <div class="map-wrapper">
-        <div
-          id="map"
-          role="application"
-          aria-label="Peta interaktif lokasi pendidikan"
-        ></div>
-        <div id="loading" class="loading-overlay">
-          <div class="loading-spinner"></div>
-          <p class="loading-text">Memuat data peta...</p>
+    </section>
+
+    <!-- UI Layer (Absolute on top of Map) -->
+    <div class="ui-layer">
+      <!-- TOP NAVBAR -->
+      <nav class="glass-navbar">
+        <div class="nav-brand">
+          <div class="nav-logo">
+            <i class="ph-fill ph-map-trifold"></i>
+          </div>
+          <div class="nav-title-group">
+            <span class="nav-title">WebGIS Analisis Kesenjangan</span>
+            <span class="nav-subtitle">Pendidikan & Kesehatan</span>
+          </div>
         </div>
-        <div class="info-panel" id="info-panel">
-          <button
-            class="info-toggle"
-            id="info-toggle"
-            aria-label="Toggle Info Panel"
-          >
-            <span class="toggle-icon">📊</span>
+
+        <div class="nav-menu">
+          <button class="nav-link active" data-target="home">
+            <i class="ph-duotone ph-house"></i> Home
           </button>
-          <div class="info-content" id="info-content">
-            <div class="info-section">
-              <h3 class="info-title">
-                <span class="title-icon">🎯</span>Konteks Penelitian
-              </h3>
-              <div class="research-badge">
-                <div class="badge-item">
-                  <span class="badge-icon">🎯</span
-                  ><span class="badge-text">Analisis Gap Aksesibilitas</span>
+          <button class="nav-link" data-target="map">
+            <i class="ph-duotone ph-map-trifold"></i> Peta
+          </button>
+          <button class="nav-link" id="nav-dashboard-btn">
+            <i class="ph-duotone ph-chart-bar"></i> Dashboard
+          </button>
+          <button class="nav-link" data-target="about" id="nav-about-btn">
+            <i class="ph-duotone ph-info"></i> Tentang
+          </button>
+        </div>
+
+        <div class="nav-actions">
+          <button
+            class="action-btn theme-toggle"
+            id="theme-toggle"
+            title="Switch Theme"
+          >
+            <i class="ph-duotone ph-moon-stars" id="theme-icon"></i>
+          </button>
+        </div>
+      </nav>
+
+      <!-- 2. Top Right: Map Controls Stack (Adjusted Position in CSS) -->
+      <div class="map-controls-stack">
+        <!-- Leaflet controls will be injected here via CSS targeting -->
+        <div class="custom-controls">
+          <!-- Realtime Clock Widget -->
+          <div class="control-widget glass-panel">
+            <i class="ph-duotone ph-clock"></i>
+            <span id="realtime-clock">--:--</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- 3. Left Panel: Dashboard (Collapsible) -->
+      <!-- 3. Full Screen Dashboard Modal ("Screen Baru") -->
+      <aside class="dashboard-panel collapsed" id="info-panel">
+        <div class="dashboard-container-inner">
+          <div class="panel-header">
+            <div class="header-title">
+              <h2>Dashboard Data</h2>
+              <span>Analisis Kesenjangan Aksesibilitas Pendidikan</span>
+            </div>
+            <button
+              class="btn-close"
+              id="close-sidebar"
+              aria-label="Close Dashboard"
+            >
+              <i class="ph-bold ph-x"></i>
+            </button>
+          </div>
+
+          <div class="panel-scroll-area custom-scrollbar" id="info-content">
+            <!-- Content -->
+            <div class="data-card">
+              <h4><i class="ph-duotone ph-info"></i> Status Analisis</h4>
+              <div class="status-row">
+                <span class="status-badge success"
+                  ><i class="ph-fill ph-check-circle"></i> Spasial</span
+                >
+                <span class="status-badge warning"
+                  ><i class="ph-fill ph-spinner"></i> Akses</span
+                >
+                <span class="status-badge error"
+                  ><i class="ph-fill ph-warning-octagon"></i> Gap</span
+                >
+              </div>
+            </div>
+
+            <div class="data-card">
+              <h4>
+                <i class="ph-duotone ph-buildings"></i> Fasilitas Pendidikan
+              </h4>
+              <div class="stat-list">
+                <div class="stat-item">
+                  <div class="stat-bullet sd"></div>
+                  <span>SD Sederajat</span>
+                  <strong id="stat-sd">0</strong>
                 </div>
-                <div class="badge-item">
-                  <span class="badge-icon">📏</span
-                  ><span class="badge-text">Service Area Analysis</span>
+                <div class="stat-item">
+                  <div class="stat-bullet smp"></div>
+                  <span>SMP Sederajat</span>
+                  <strong id="stat-smp">0</strong>
                 </div>
-                <div class="badge-item">
-                  <span class="badge-icon">🏙️</span
-                  ><span class="badge-text">Urban Sprawl Impact</span>
+                <div class="stat-item">
+                  <div class="stat-bullet sma"></div>
+                  <span>SMA/SMK</span>
+                  <strong id="stat-sma">0</strong>
+                </div>
+                <div class="stat-item">
+                  <div class="stat-bullet univ"></div>
+                  <span>Perguruan Tinggi</span>
+                  <strong id="stat-univ">0</strong>
                 </div>
               </div>
             </div>
-            <div class="info-section">
-              <h3 class="info-title">
-                <span class="title-icon">📊</span>Distribusi Fasilitas
-              </h3>
-              <div class="info-stats">
-                <div class="info-stat-item">
-                  <span
-                    class="info-stat-icon"
-                    style="
-                      background: linear-gradient(135deg, #0066cc, #004499);
-                    "
-                    >🏫</span
-                  >
-                  <div class="info-stat-details">
-                    <span class="info-stat-number" id="stat-sd">0</span>
-                    <span class="info-stat-label">SD/SDN/SDIT</span>
-                    <div class="stat-progress">
-                      <div
-                        class="stat-bar"
-                        id="bar-sd"
-                        style="background: #0066cc"
-                      ></div>
-                    </div>
-                  </div>
-                </div>
-                <div class="info-stat-item">
-                  <span
-                    class="info-stat-icon"
-                    style="
-                      background: linear-gradient(135deg, #28a745, #1e7e34);
-                    "
-                    >🏫</span
-                  >
-                  <div class="info-stat-details">
-                    <span class="info-stat-number" id="stat-smp">0</span>
-                    <span class="info-stat-label">SMP/SMPN/SMPIT</span>
-                    <div class="stat-progress">
-                      <div
-                        class="stat-bar"
-                        id="bar-smp"
-                        style="background: #28a745"
-                      ></div>
-                    </div>
-                  </div>
-                </div>
-                <div class="info-stat-item">
-                  <span
-                    class="info-stat-icon"
-                    style="
-                      background: linear-gradient(135deg, #dc3545, #bd2130);
-                    "
-                    >🏫</span
-                  >
-                  <div class="info-stat-details">
-                    <span class="info-stat-number" id="stat-sma">0</span>
-                    <span class="info-stat-label">SMA/SMAN/SMK</span>
-                    <div class="stat-progress">
-                      <div
-                        class="stat-bar"
-                        id="bar-sma"
-                        style="background: #dc3545"
-                      ></div>
-                    </div>
-                  </div>
-                </div>
-                <div class="info-stat-item">
-                  <span
-                    class="info-stat-icon"
-                    style="
-                      background: linear-gradient(135deg, #6f42c1, #5a32a3);
-                    "
-                    >🎓</span
-                  >
-                  <div class="info-stat-details">
-                    <span class="info-stat-number" id="stat-univ">0</span>
-                    <span class="info-stat-label">Universitas</span>
-                    <div class="stat-progress">
-                      <div
-                        class="stat-bar"
-                        id="bar-univ"
-                        style="background: #6f42c1"
-                      ></div>
-                    </div>
-                  </div>
-                </div>
-              </div>
+
+            <div class="data-card guide-card">
+              <h4><i class="ph-duotone ph-hand-tap"></i> Petunjuk</h4>
+              <p>
+                Klik marker pada peta untuk melihat detail informasi sekolah,
+                atau gunakan tools di bawah untuk analisis lebih lanjut.
+              </p>
             </div>
-            <div class="info-section">
-              <h3 class="info-title">
-                <span class="title-icon">🔍</span>Key Findings
-              </h3>
-              <div class="findings-list">
-                <div class="finding-item">
-                  <span class="finding-icon success">✓</span
-                  ><span class="finding-text"
-                    >Distribusi spasial telah dipetakan</span
-                  >
-                </div>
-                <div class="finding-item">
-                  <span class="finding-icon info">ℹ</span
-                  ><span class="finding-text"
-                    >Analisis aksesibilitas ongoing</span
-                  >
-                </div>
-                <div class="finding-item">
-                  <span class="finding-icon warning">⚠</span
-                  ><span class="finding-text"
-                    >Gap area identification diperlukan</span
-                  >
-                </div>
+          </div>
+        </div>
+      </aside>
+
+      </aside>
+
+      <!-- Analysis Results Sidebar (Left Side) -->
+      <aside class="analysis-sidebar-panel" id="analysis-sidebar">
+        <div class="analysis-header">
+          <h3>
+            <i class="ph-duotone ph-chart-pie-slice" style="color:var(--primary-color)"></i>
+            Hasil Analisis
+          </h3>
+          <button class="btn-close-analysis" onclick="AnalysisUtils.closeSidebar()">
+            <i class="ph-bold ph-x"></i>
+          </button>
+        </div>
+        <div class="analysis-content" id="analysis-sidebar-content">
+          <!-- Dynamic Content goes here -->
+          <div style="text-align:center; color:var(--text-secondary); margin-top:40px;">
+             <i class="ph-duotone ph-chart-polar" style="font-size:3rem; margin-bottom:10px; display:block;"></i>
+             Belum ada analisis yang dijalankan.
+          </div>
+        </div>
+      </aside>
+
+      <!-- New Modals for "Screens" -->
+
+      <!-- ABOUT MODAL -->
+      <div id="modal-about" class="glass-modal hidden">
+        <div class="modal-content glass-panel">
+          <button
+            class="modal-close"
+            onclick="UIUtils.toggleModal('modal-about')"
+          >
+            <i class="ph-bold ph-x"></i>
+          </button>
+          <div class="modal-hero">
+             <div class="hero-icon"><i class="ph-duotone ph-info"></i></div>
+             <h2>Tentang Aplikasi</h2>
+             <p>Sistem Informasi Geografis Analisis Kesenjangan Aksesibilitas Pendidikan</p>
+          </div>
+          <div class="modal-body custom-scrollbar">
+            <p>
+              Aplikasi ini dirancang untuk menganalisis kesenjangan
+              aksesibilitas pendidikan di Kecamatan Gunung Puyuh menggunakan
+              metode analisis spasial dan jaringan jalan.
+            </p>
+
+            <div class="feature-grid">
+              <div class="feature-item">
+                <i class="ph-duotone ph-map-pin-line"></i>
+                <span>Sebaran Fasilitas</span>
               </div>
-            </div>
-            <div class="info-section">
-              <h3 class="info-title">
-                <span class="title-icon">🎮</span>Panduan Interaktif
-              </h3>
-              <div class="guide-grid">
-                <div class="guide-card">
-                  <div class="guide-icon">🖱️</div>
-                  <div class="guide-text">
-                    <strong>Navigasi</strong>
-                    <p>Klik marker untuk detail lokasi</p>
-                  </div>
-                </div>
-                <div class="guide-card">
-                  <div class="guide-icon">🔍</div>
-                  <div class="guide-text">
-                    <strong>Zoom</strong>
-                    <p>Scroll atau pinch untuk zoom</p>
-                  </div>
-                </div>
-                <div class="guide-card">
-                  <div class="guide-icon">🎨</div>
-                  <div class="guide-text">
-                    <strong>Layer</strong>
-                    <p>Toggle base map & overlays</p>
-                  </div>
-                </div>
-                <div class="guide-card">
-                  <div class="guide-icon">📍</div>
-                  <div class="guide-text">
-                    <strong>Filter</strong>
-                    <p>Pilih kategori di kontrol layer</p>
-                  </div>
-                </div>
+              <div class="feature-item">
+                <i class="ph-duotone ph-person-simple-walk"></i>
+                <span>Analisis Jangkauan</span>
               </div>
-            </div>
-            <div class="info-section">
-              <h3 class="info-title">
-                <span class="title-icon">🔬</span>Metodologi
-              </h3>
-              <div class="methodology-tags">
-                <span class="method-tag">Point Pattern Analysis</span>
-                <span class="method-tag">Isochrone Mapping</span>
-                <span class="method-tag">Gap Analysis</span>
-                <span class="method-tag">GeoJSON Processing</span>
+              <div class="feature-item">
+                <i class="ph-duotone ph-chart-pie-slice"></i>
+                <span>Statistik Gap</span>
               </div>
             </div>
           </div>
         </div>
       </div>
-    </main>
-    <div class="analysis-panel" id="analysis-panel">
-      <div class="analysis-header">
-        <h3 class="analysis-title">
-          <span class="analysis-icon">📊</span>Data Analisis
-        </h3>
-        <button
-          class="analysis-close"
-          id="analysis-close"
-          aria-label="Tutup Panel Analisis"
-        >
-          ✕
-        </button>
-      </div>
-      <div class="analysis-content">
-        <div class="analysis-modes">
+
+      <!-- NEW DASHBOARD PAGE (Standalone Section) -->
+      <section id="dashboard-page" class="dashboard-page">
+        <div class="dashboard-navbar">
+             <div class="dash-brand">
+                <div class="dash-icon"><i class="ph-duotone ph-squares-four"></i></div>
+                <div class="dash-title">
+                    <h2>Dashboard Analisis Kesenjangan</h2>
+                    <p>Monitoring Aksesibilitas & Distribusi Fasilitas</p>
+                </div>
+             </div>
+             
+             <div class="dash-center-actions">
+                 <div class="dash-search-bar">
+                    <i class="ph ph-magnifying-glass"></i>
+                    <input type="text" id="facility-search" placeholder="Cari data fasilitas..." onkeyup="UIUtils.filterFacilities()">
+                 </div>
+             </div>
+
+             <div class="dash-right-actions">
+                 <div class="dash-date-badge">
+                     <i class="ph-duotone ph-calendar-blank"></i>
+                     <span id="dash-date-display">Jan 2026</span>
+                 </div>
+                 <button class="btn-dash-close" onclick="UIUtils.closeFacilitiesDashboard()">
+                    <i class="ph-bold ph-x"></i>
+                    <span>Tutup</span>
+                 </button>
+             </div>
+        </div>
+
+        <div class="dashboard-content-wrapper">
+             <!-- Sidebar Navigation -->
+             <div class="dash-sidebar">
+                 <div class="dash-profile">
+                    <div class="dash-avatar"><i class="ph-fill ph-user"></i></div>
+                    <div class="dash-user-info">
+                        <strong>Admin Kecamatan</strong>
+                        <span>Kec. Gunung Puyuh</span>
+                    </div>
+                 </div>
+
+                 <div class="dash-menu-group">
+                     <div class="dash-menu-label">MENU UTAMA</div>
+                     <button class="dash-menu-item active" onclick="UIUtils.switchDashView('overview', this)" title="Overview">
+                        <i class="ph-duotone ph-chart-pie-slice"></i> Overview
+                     </button>
+                     <button class="dash-menu-item" onclick="UIUtils.switchDashView('analytics', this)" title="Analisis Gap">
+                        <i class="ph-duotone ph-trend-up"></i> Analisis Gap
+                     </button>
+                     <button class="dash-menu-item" onclick="UIUtils.switchDashView('reports', this)" title="Laporan">
+                        <i class="ph-duotone ph-file-text"></i> Laporan
+                     </button>
+                 </div>
+
+                 <div class="dash-menu-group">
+                     <div class="dash-menu-label">FILTER DATA</div>
+                     <button class="dash-menu-item filter-btn" onclick="UIUtils.filterFacilitiesCategory('all', this)" title="Semua Data">
+                        <i class="ph-duotone ph-squares-four"></i> Semua Data
+                     </button>
+                     <button class="dash-menu-item filter-btn" onclick="UIUtils.filterFacilitiesCategory('education', this)" title="Pendidikan">
+                        <i class="ph-duotone ph-graduation-cap"></i> Pendidikan
+                     </button>
+                     <button class="dash-menu-item filter-btn" onclick="UIUtils.filterFacilitiesCategory('health', this)" title="Kesehatan">
+                        <i class="ph-duotone ph-heartbeat"></i> Kesehatan
+                     </button>
+                 </div>
+             </div>
+
+             <!-- Main Scroll Area -->
+             <div class="dash-main-area custom-scrollbar">
+                 
+                 <!-- VIEW: OVERVIEW (Default) -->
+                 <div id="dash-view-overview" class="dash-view active">
+                    <!-- 1. Stats Row -->
+                    <div class="dash-stats-row">
+                        <div class="stat-card blue">
+                            <div class="stat-icon"><i class="ph-duotone ph-buildings"></i></div>
+                            <div class="stat-info">
+                                <span class="stat-value" id="stat-total-fac">0</span>
+                                <span class="stat-label">Total Fasilitas</span>
+                            </div>
+                            <div class="stat-trend increasing">+2 Bulan ini</div>
+                        </div>
+                        <div class="stat-card green">
+                            <div class="stat-icon"><i class="ph-duotone ph-graduation-cap"></i></div>
+                            <div class="stat-info">
+                                <span class="stat-value" id="stat-total-edu">0</span>
+                                <span class="stat-label">Unit Pendidikan</span>
+                            </div>
+                            <div class="stat-trend neutral">Stabil</div>
+                        </div>
+                        <div class="stat-card red">
+                            <div class="stat-icon"><i class="ph-duotone ph-heartbeat"></i></div>
+                            <div class="stat-info">
+                                <span class="stat-value" id="stat-total-health">0</span>
+                                <span class="stat-label">Unit Kesehatan</span>
+                            </div>
+                            <div class="stat-trend increasing">+1 Baru</div>
+                        </div>
+                        <div class="stat-card purple">
+                            <div class="stat-icon"><i class="ph-duotone ph-chart-bar"></i></div>
+                            <div class="stat-info">
+                                <span class="stat-value">85%</span>
+                                <span class="stat-label">Cakupan Layanan</span>
+                            </div>
+                            <div class="stat-trend positive">Baik</div>
+                        </div>
+                    </div>
+
+                    <!-- 2. Chart / Highlight Section -->
+                    <div class="dash-charts-section">
+                        <div class="chart-container large">
+                            <div class="chart-header">
+                                <h3><i class="ph-duotone ph-chart-donut"></i> Distribusi Kategori</h3>
+                            </div>
+                            <div class="chart-body">
+                                <div class="simple-bar-chart">
+                                    <div class="bar-group">
+                                        <div class="bar-label">SD/MI</div>
+                                        <div class="bar-track"><div class="bar-fill blue" style="width: 45%"></div></div>
+                                        <div class="bar-val">45%</div>
+                                    </div>
+                                    <div class="bar-group">
+                                        <div class="bar-label">SMP/MTs</div>
+                                        <div class="bar-track"><div class="bar-fill green" style="width: 30%"></div></div>
+                                        <div class="bar-val">30%</div>
+                                    </div>
+                                    <div class="bar-group">
+                                        <div class="bar-label">SMA/SMK</div>
+                                        <div class="bar-track"><div class="bar-fill orange" style="width: 15%"></div></div>
+                                        <div class="bar-val">15%</div>
+                                    </div>
+                                    <div class="bar-group">
+                                        <div class="bar-label">Faskes</div>
+                                        <div class="bar-track"><div class="bar-fill red" style="width: 10%"></div></div>
+                                        <div class="bar-val">10%</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="chart-container small">
+                            <div class="chart-header">
+                                <h3><i class="ph-duotone ph-lightbulb"></i> Rekomendasi AI</h3>
+                            </div>
+                            <div class="chart-body recommendation-body">
+                                <div class="rec-item">
+                                    <i class="ph-fill ph-warning-circle" style="color:#ef4444"></i>
+                                    <div>
+                                        <strong>Area Utara Underserved</strong>
+                                        <p>Dibutuhkan penambahan Posyandu di RW 05.</p>
+                                    </div>
+                                </div>
+                                <div class="rec-item">
+                                    <i class="ph-fill ph-check-circle" style="color:#10b981"></i>
+                                    <div>
+                                        <strong>Akses Pendidikan Baik</strong>
+                                        <p>90% pemukiman dalam radius 1km sekolah.</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 3. Directory Header -->
+                    <div class="dash-section-title">
+                        <h3>Data Fasilitas Terdaftar</h3>
+                        <div class="view-toggles">
+                            <button class="active"><i class="ph-bold ph-grid-four"></i> Grid</button>
+                            <button><i class="ph-bold ph-list-dashes"></i> List</button>
+                        </div>
+                    </div>
+
+                    <!-- 4. Main Grid (Large Cards) -->
+                    <div class="dash-grid-large" id="facilities-grid">
+                        <!-- Cards injected here -->
+                    </div>
+                 </div>
+
+                 <!-- VIEW: ANALYTICS (Gap Analysis) -->
+                 <div id="dash-view-analytics" class="dash-view hidden" style="display:none;">
+                     <div class="analytics-header">
+                         <div class="title-group">
+                             <h3>Analisis Kesenjangan & Jangkauan</h3>
+                             <p>Laporan detail mengenai distribusi spasial dan area blank spot.</p>
+                         </div>
+                         <button class="btn-primary-action" onclick="UIUtils.closeFacilitiesDashboard(); AnalysisUtils.openGapAnalysisWizard();">
+                             <i class="ph-duotone ph-map-pin"></i> Buka Peta Analisis
+                         </button>
+                     </div>
+
+                     <div class="analytics-grid">
+                         <!-- Score Card -->
+                         <div class="analytics-card score-card">
+                             <h4>Skor Aksesibilitas Wilayah</h4>
+                             <div class="score-circle">
+                                 <div class="score-number">7.8</div>
+                                 <div class="score-label">Baik</div>
+                             </div>
+                             <div class="score-details">
+                                 <div class="score-row">
+                                     <span>Pendidikan</span>
+                                     <div class="progress-bar"><div class="fill" style="width:85%"></div></div>
+                                     <span>8.5</span>
+                                 </div>
+                                 <div class="score-row">
+                                     <span>Kesehatan</span>
+                                     <div class="progress-bar"><div class="fill" style="width:65%"></div></div>
+                                     <span>6.5</span>
+                                 </div>
+                             </div>
+                         </div>
+
+                         <!-- Blank Spot Table -->
+                         <div class="analytics-card table-card">
+                             <h4>Identifikasi Blank Spot (Area Tanpa Layanan)</h4>
+                             <table class="dash-table">
+                                 <thead>
+                                     <tr>
+                                         <th>Lokasi / RW</th>
+                                         <th>Jenis Kekurangan</th>
+                                         <th>Populasi Terdampak</th>
+                                         <th>Prioritas</th>
+                                     </tr>
+                                 </thead>
+                                 <tbody>
+                                     <tr>
+                                         <td>RW 05 Karang Tengah</td>
+                                         <td><span class="badgex red">Kesehatan (Posyandu)</span></td>
+                                         <td>~450 KK</td>
+                                         <td><span class="status-dot high"></span> Tinggi</td>
+                                     </tr>
+                                     <tr>
+                                         <td>RW 02 Gunung Puyuh</td>
+                                         <td><span class="badgex orange">Pendidikan (SMA)</span></td>
+                                         <td>~200 Remaja</td>
+                                         <td><span class="status-dot medium"></span> Menengah</td>
+                                     </tr>
+                                     <tr>
+                                         <td>RW 09 Keramat</td>
+                                         <td><span class="badgex blue">Akses Jalan</span></td>
+                                         <td>-</td>
+                                         <td><span class="status-dot low"></span> Rendah</td>
+                                     </tr>
+                                 </tbody>
+                             </table>
+                         </div>
+                     </div>
+                 </div>
+
+                 <!-- VIEW: REPORTS -->
+                 <div id="dash-view-reports" class="dash-view hidden" style="display:none;">
+                     <div class="analytics-header">
+                        <div class="title-group">
+                            <h3>Pusat Laporan & Ekspor Data</h3>
+                            <p>Unduh laporan analisis dan data mentah dalam format PDF atau Excel.</p>
+                        </div>
+                    </div>
+
+                    <div class="reports-container">
+                        <div class="report-item">
+                            <div class="file-icon pdf"><i class="ph-fill ph-file-pdf"></i></div>
+                            <div class="file-info">
+                                <h4>Laporan Analisis Kesenjangan Q1 2026</h4>
+                                <p>Generated on Jan 15, 2026 • 2.4 MB</p>
+                            </div>
+                            <button class="btn-download"><i class="ph-bold ph-download-simple"></i> Unduh</button>
+                        </div>
+
+                        <div class="report-item">
+                            <div class="file-icon xls"><i class="ph-fill ph-file-xls"></i></div>
+                            <div class="file-info">
+                                <h4>Database Fasilitas Pendidikan & Kesehatan</h4>
+                                <p>Updated yesterday • CSV Format</p>
+                            </div>
+                            <button class="btn-download"><i class="ph-bold ph-download-simple"></i> Unduh</button>
+                        </div>
+
+                         <div class="report-item">
+                            <div class="file-icon doc"><i class="ph-fill ph-file-doc"></i></div>
+                            <div class="file-info">
+                                <h4>Rekomendasi Kebijakan Pembangunan Baru</h4>
+                                <p>Draft Version • 1.1 MB</p>
+                            </div>
+                            <button class="btn-download"><i class="ph-bold ph-download-simple"></i> Unduh</button>
+                        </div>
+                    </div>
+                 </div>
+
+             </div>
+        </div>
+      </section>
+
+      <!-- 4. Bottom Dock: Analysis & Actions (The 'Mac' Dock) -->
+      <div class="bottom-dock-container">
+        <!-- Floating Instruction Pill -->
+        <div id="analysis-info" style="display: none"></div>
+
+        <div class="dock-glass">
           <button
-            class="analysis-mode-btn"
+            class="dock-item tooltipped"
+            data-tooltip="Fasilitas Terdekat"
             id="nearest-btn"
             data-mode="nearest"
-            title="Cari rute & waktu ke fasilitas terdekat"
           >
-            <span class="mode-icon">🎯</span
-            ><span class="mode-text">Terdekat</span>
+            <i class="ph-duotone ph-target"></i>
           </button>
           <button
-            class="analysis-mode-btn"
-            id="isochrone-btn"
-            data-mode="isochrone"
-            title="Analisis jangkauan waktu (5-15 menit)"
-          >
-            <span class="mode-icon">🕐</span
-            ><span class="mode-text">Isochrone</span>
-          </button>
-          <button
-            class="analysis-mode-btn"
-            id="distance-btn"
-            data-mode="distance"
-            title="Ukur jarak rute jalan raya"
-          >
-            <span class="mode-icon">📏</span
-            ><span class="mode-text">Ukur Jarak</span>
-          </button>
-          <button
-            class="analysis-mode-btn"
-            id="buffer-btn"
-            data-mode="buffer"
-            title="Service Area (Jangkauan Jarak 1-3 KM)"
-          >
-            <span class="mode-icon">⭕</span
-            ><span class="mode-text">Service Area</span>
-          </button>
-          <button
-            class="analysis-mode-btn"
-            id="prediction-btn"
-            data-mode="prediction"
-            title="Prediksi pertumbuhan pemukiman"
-          >
-            <span class="mode-icon">🏘️</span
-            ><span class="mode-text">Prediksi</span>
-          </button>
-          <button
-            class="analysis-mode-btn"
+            class="dock-item tooltipped"
+            data-tooltip="Top 5"
             id="topN-btn"
             data-mode="topN"
-            title="Cari 5 fasilitas terdekat"
           >
-            <span class="mode-icon">🏆</span
-            ><span class="mode-text">Top 5</span>
+            <i class="ph-duotone ph-trophy"></i>
           </button>
           <button
-            class="analysis-mode-btn"
+            class="dock-item tooltipped"
+            data-tooltip="Jangkauan (Isochrone)"
+            id="isochrone-btn"
+            data-mode="isochrone"
+          >
+            <i class="ph-duotone ph-timer"></i>
+          </button>
+          <button
+            class="dock-item tooltipped"
+            data-tooltip="Ukur Jarak"
+            id="distance-btn"
+            data-mode="distance"
+          >
+            <i class="ph-duotone ph-ruler"></i>
+          </button>
+          
+          <!-- AI Assistant Button (Center - Pos 5) -->
+          <button
+            class="dock-item tooltipped ai-trigger-btn"
+            data-tooltip="Ask AI Assistant"
+            id="chat-btn"
+          >
+            <i class="ph-fill ph-sparkle"></i>
+          </button>
+
+          <!-- Divider removed to keep symmetry if preferred, or kept -->
+          <div class="dock-separator"></div>
+
+          <button
+            class="dock-item tooltipped"
+            data-tooltip="Service Area"
+            id="iso-btn"
+            data-mode="buffer"
+          >
+            <i class="ph-duotone ph-scan"></i>
+          </button>
+
+          <button
+            class="dock-item tooltipped"
+            data-tooltip="Gap Analysis"
             id="gap-btn"
             data-mode="gap"
-            title="Analisis kesenjangan aksesibilitas"
           >
-            <span class="mode-icon">⚠️</span
-            ><span class="mode-text">Gap Analysis</span>
+            <i class="ph-duotone ph-warning-octagon"></i>
           </button>
           <button
-            class="analysis-mode-btn"
+            class="dock-item tooltipped"
+            data-tooltip="Compare"
             id="compare-btn"
             data-mode="compare"
-            title="Bandingkan aksesibilitas 2 lokasi"
           >
-            <span class="mode-icon">⚖️</span
-            ><span class="mode-text">Compare</span>
+            <i class="ph-duotone ph-scales"></i>
           </button>
+          <div class="dock-separator"></div>
           <button
-            class="analysis-mode-btn"
-            id="clustering-btn"
-            data-mode="clustering"
-            title="Kelompokkan fasilitas (GeoAI Simulation)"
+            class="dock-item tooltipped action-primary"
+            data-tooltip="Reset Peta"
+            id="clear-analysis"
           >
-            <span class="mode-icon">🧩</span
-            ><span class="mode-text">Clustering</span>
+            <i class="ph-bold ph-trash"></i>
           </button>
         </div>
-        <div class="analysis-info" id="analysis-info">
-          <p class="info-instruction">
-            Pilih mode analisis di atas, lalu klik pada peta untuk memulai.
-          </p>
+      </div>
+
+      <!-- Dummy Panel to satisfy legacy JS handlers -->
+      <div id="analysis-panel" style="display: none"></div>
+
+      <!-- 5. Bottom Right: Support Widgets (Chat) -->
+      <!-- Chat widget button is injected by js/chat-assistant.js, will be styled via CSS to sit right of dock -->
+
+      <!-- Analysis Results Toast (Floating above dock) -->
+      <div
+        id="analysis-results"
+        class="results-toast glass-panel"
+        style="display: none"
+      >
+        <div class="toast-header">
+          <strong>Hasil Analisis</strong>
+          <button
+            class="btn-icon-xs"
+            onclick="document.getElementById('analysis-results').style.display='none'"
+          >
+            <i class="ph ph-x"></i>
+          </button>
         </div>
-        <div
-          class="analysis-results"
-          id="analysis-results"
-          style="display: none"
-        >
-          <div class="results-header">
-            <h4 class="results-title">Hasil Analisis</h4>
-            <button class="results-clear" id="clear-analysis">Bersihkan</button>
-          </div>
-          <div class="results-content" id="results-content"></div>
-        </div>
+        <div id="results-content"></div>
       </div>
     </div>
-    <button
-      class="analysis-toggle"
-      id="analysis-toggle"
-      aria-label="Toggle Analysis Panel"
-    >
-      <span class="toggle-icon">📊</span
-      ><span class="toggle-text">Analisis</span>
-    </button>
-    <footer class="footer">
-      <div class="footer-content">
-        <div class="footer-grid">
-          <div class="footer-section">
-            <h4 class="footer-heading">📍 Lokasi</h4>
-            <p class="footer-text">Kecamatan Gunung Puyuh</p>
-            <p class="footer-text">Kota Sukabumi, Jawa Barat</p>
-          </div>
-          <div class="footer-section">
-            <h4 class="footer-heading">🎯 Tujuan Penelitian</h4>
-            <p class="footer-text">
-              Analisis aksesibilitas fasilitas pendidikan untuk mendukung
-              perencanaan wilayah berbasis data spasial
-            </p>
-          </div>
-          <div class="footer-section">
-            <h4 class="footer-heading">🗺️ Data Sources</h4>
-            <p class="footer-text">© OpenStreetMap contributors</p>
-            <p class="footer-text">© Esri World Imagery</p>
-            <p class="footer-text">Survey Lapangan 2025</p>
-          </div>
-          <div class="footer-section">
-            <h4 class="footer-heading">📊 Teknologi</h4>
-            <div class="tech-badges">
-              <span class="tech-badge">Leaflet.js</span>
-              <span class="tech-badge">GeoJSON</span>
-              <span class="tech-badge">WebGIS</span>
-              <span class="tech-badge">JavaScript</span>
-            </div>
-          </div>
+
+    <!-- Main Layout -->
+    <div class="app-container">
+      <!-- 2. Main Map Canvas -->
+      <main class="map-container">
+        <div id="map" role="application" aria-label="Peta Interaktif"></div>
+
+        <!-- Loading Overlay -->
+        <div id="loading" class="map-loader">
+          <div class="spinner"></div>
+          <span>Memuat Data Spasial...</span>
         </div>
-        <div class="footer-bottom">
-          <p class="footer-copyright">
-            © 2025 WebGIS Project - Kecamatan Gunung Puyuh |
-            <span class="footer-badge">🔬 Research Project</span> |
-            <span class="footer-badge">📚 Educational Purpose</span>
-          </p>
-        </div>
-      </div>
-    </footer>
+      </main>
+
+      <!-- 4. Top Right Controls (Layer Control place) -->
+      <!-- Leaflet automatically places controls here, we just style them -->
+    </div>
+
+    <!-- Scripts -->
+    <!-- Leaflet & Turf -->
     <script
       src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
       integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
       crossorigin=""
     ></script>
     <script src="https://cdn.jsdelivr.net/npm/@turf/turf@6/turf.min.js"></script>
+
+    <!-- App Logic -->
     <script src="js/config.js"></script>
     <script src="js/env.js"></script>
     <script src="js/ui-utils.js"></script>
+    <script src="js/ui/dashboard.js"></script>
     <script src="js/marker-utils.js"></script>
     <script src="js/popup-utils.js"></script>
     <script src="js/analysis/core.js"></script>
     <script src="js/analysis/isochrone.js"></script>
     <script src="js/analysis/measure.js"></script>
     <script src="js/analysis/nearest.js"></script>
+    <script src="js/analysis/hotspot.js"></script>
     <script src="js/analysis/gap.js"></script>
     <script src="js/analysis/compare.js"></script>
     <script src="js/analysis/predict.js"></script>
@@ -486,6 +918,8 @@
     <script src="js/realtime-simulation.js"></script>
     <script src="js/geojson-loader.js"></script>
     <script src="js/map-initializer.js"></script>
+    <script src="js/chat/chat-ui.js"></script>
+    <script src="js/chat/chat-engine.js"></script>
     <script src="js/chat-assistant.js"></script>
     <script src="js/app.js"></script>
   </body>

@@ -124,7 +124,8 @@
     {
       "type": "Feature",
       "properties": {
-        "SMP": "SMP IT Hayatan Thayyibah"
+        "SMP": "SMP IT Hayatan Thayyibah",
+        "Foto": "../img/smp/smp_it_hayatan_thayyibah.png"
       },
       "geometry": {
         "type": "Point",

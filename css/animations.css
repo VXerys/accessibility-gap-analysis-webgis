@@ -12,7 +12,7 @@
 @keyframes slideIn {
   from {
     opacity: 0;
-    transform: translateX(100px);
+    transform: translateX(20px);
   }
   to {
     opacity: 1;
@@ -27,7 +27,7 @@
   }
   to {
     opacity: 0;
-    transform: translateX(100px);
+    transform: translateX(20px);
   }
 }
 
@@ -42,15 +42,24 @@
 }
 
 @media print {
-  .header,
-  .footer,
-  .info-panel,
-  .leaflet-control-layers {
-    display: none;
+  .floating-header,
+  .floating-sidebar,
+  .floating-toolbar,
+  .leaflet-control-zoom,
+  .fab-main,
+  .chat-widget-btn,
+  .sidebar-toggle {
+    display: none !important;
   }
 
-  .map-wrapper {
-    height: 100vh;
-    border-radius: 0;
+  .app-container {
+    height: 100%;
+    width: 100%;
+  }
+
+  .map-container {
+    position: relative;
+    width: 100%;
+    height: 100%;
   }
 }

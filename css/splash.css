@@ -1,32 +1,116 @@
+/* Clean Professional Splash Screen */
 .splash-screen {
   position: fixed;
   top: 0;
   left: 0;
   width: 100%;
   height: 100%;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+  background-color: #f8fafc; /* Lighter background for freshness */
   display: flex;
   align-items: center;
   justify-content: center;
   z-index: 9999;
-  transition: opacity 0.5s ease, visibility 0.5s ease;
+  transition: opacity 0.8s cubic-bezier(0.4, 0, 0.2, 1), visibility 0.8s ease;
+}
+
+[data-theme="dark"] .splash-screen {
+  background-color: #0f172a; /* Slate 900 */
 }
 
 .splash-screen.hidden {
   opacity: 0;
   visibility: hidden;
+  pointer-events: none;
 }
 
 .splash-content {
   text-align: center;
-  color: white;
-  animation: splashFadeIn 0.8s ease-out;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 24px;
 }
 
-@keyframes splashFadeIn {
+.splash-brand {
+  font-size: 4rem;
+  color: var(--primary-color);
+  margin-bottom: 0;
+  display: inline-flex;
+  padding: 20px;
+  background: white;
+  border-radius: 24px;
+  box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.1);
+  animation: floatIcon 3s ease-in-out infinite;
+}
+
+[data-theme="dark"] .splash-brand {
+  background: rgba(30, 41, 59, 0.5);
+  box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.splash-text-group {
+  opacity: 0;
+  animation: fadeInUp 0.8s ease-out forwards 0.3s;
+}
+
+.splash-title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--text-main);
+  margin-bottom: 8px;
+  letter-spacing: -0.02em;
+}
+
+.splash-subtitle {
+  font-size: 0.95rem;
+  color: var(--text-secondary);
+  font-weight: 500;
+  opacity: 0.8;
+}
+
+/* Modern Loader - Sleek Line */
+.splash-loader {
+  width: 200px;
+  height: 4px;
+  background: rgba(0, 0, 0, 0.05);
+  border-radius: 99px;
+  margin-top: 20px;
+  overflow: hidden;
+  position: relative;
+  opacity: 0;
+  animation: fadeIn 0.8s ease-out forwards 0.6s;
+}
+
+[data-theme="dark"] .splash-loader {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.loader-bar {
+  height: 100%;
+  background: var(--primary-color);
+  width: 0%;
+  position: absolute;
+  left: 0;
+  border-radius: 99px;
+  animation: loadingProgress 2s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+}
+
+/* Animations */
+@keyframes floatIcon {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+@keyframes fadeInUp {
   from {
     opacity: 0;
-    transform: translateY(30px);
+    transform: translateY(20px);
   }
   to {
     opacity: 1;
@@ -34,96 +118,79 @@
   }
 }
 
-.splash-icon {
-  font-size: 6rem;
-  margin-bottom: 1.5rem;
-  animation: splashBounce 1.5s ease-in-out infinite;
+@keyframes loadingProgress {
+  0% {
+    left: 0;
+    width: 0%;
+  }
+  50% {
+    left: 0;
+    width: 70%;
+  }
+  100% {
+    left: 100%;
+    width: 0%;
+  }
 }
 
-@keyframes splashBounce {
-  0%,
-  100% {
+/* --- ADDED LANDING STAGGERED ANIMATIONS --- */
+
+/* Ensure elements are hidden initially when parent has 'active' class */
+.landing-page.active .hero-text-group > * {
+  opacity: 0;
+  animation: landingStagger 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+}
+
+/* Stagger Delays */
+.landing-page.active .hero-text-group .hero-badge {
+  animation-delay: 0.1s;
+}
+
+.landing-page.active .hero-text-group .hero-title {
+  animation-delay: 0.3s;
+}
+
+.landing-page.active .hero-text-group .hero-description {
+  animation-delay: 0.5s;
+}
+
+.landing-page.active .hero-text-group .hero-actions {
+  animation-delay: 0.7s;
+}
+
+/* Tabs Navigation Entrance */
+.landing-page.active .landing-tabs-nav {
+  opacity: 0;
+  animation: landingStagger 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+  animation-delay: 0.9s;
+}
+
+/* Right Column Entrance (Slide from Right) */
+.landing-page.active .landing-col-right {
+  opacity: 0;
+  transform: translateX(40px);
+  animation: landingSlideIn 1s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+  animation-delay: 0.6s;
+}
+
+@keyframes landingStagger {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
     transform: translateY(0);
   }
-  50% {
-    transform: translateY(-20px);
+}
+
+@keyframes landingSlideIn {
+  from {
+    opacity: 0;
+    transform: translateX(40px);
   }
-}
-
-.splash-title {
-  font-size: 3rem;
-  font-weight: 700;
-  margin-bottom: 0.5rem;
-  text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.2);
-  letter-spacing: -1px;
-}
-
-.splash-subtitle {
-  font-size: 1.25rem;
-  font-weight: 300;
-  margin-bottom: 2rem;
-  opacity: 0.9;
-}
-
-.splash-loader {
-  width: 250px;
-  height: 4px;
-  background: rgba(255, 255, 255, 0.2);
-  border-radius: 10px;
-  margin: 0 auto 1rem;
-  overflow: hidden;
-}
-
-.loader-bar {
-  height: 100%;
-  background: linear-gradient(90deg, #fff, rgba(255, 255, 255, 0.8), #fff);
-  border-radius: 10px;
-  animation: loaderProgress 2s ease-in-out infinite;
-}
-
-@keyframes loaderProgress {
-  0% {
-    width: 0%;
-    margin-left: 0;
-  }
-  50% {
-    width: 80%;
-    margin-left: 10%;
-  }
-  100% {
-    width: 0%;
-    margin-left: 100%;
-  }
-}
-
-.splash-text {
-  font-size: 0.875rem;
-  opacity: 0.8;
-  animation: splashPulse 1.5s ease-in-out infinite;
-}
-
-@keyframes splashPulse {
-  0%,
-  100% {
-    opacity: 0.5;
-  }
-  50% {
+  to {
     opacity: 1;
-  }
-}
-
-@media (max-width: 768px) {
-  .splash-icon {
-    font-size: 4rem;
-  }
-  .splash-title {
-    font-size: 2rem;
-  }
-  .splash-subtitle {
-    font-size: 1rem;
-    padding: 0 1rem;
-  }
-  .splash-loader {
-    width: 200px;
+    transform: translateX(0);
   }
 }

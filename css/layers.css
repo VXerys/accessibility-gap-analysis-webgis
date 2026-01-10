@@ -1,0 +1,278 @@
+/* Modern Navbar Layer Control */
+.leaflet-control-layers {
+  background: white !important;
+  border-radius: 20px !important;
+  padding: 0 !important;
+  box-shadow: var(--shadow-sm) !important;
+  border: 1px solid rgba(0, 0, 0, 0.1) !important;
+  font-family: "Inter", sans-serif !important;
+
+  /* Smooth Transition using max-height/width */
+  transition: width 0.4s cubic-bezier(0.25, 1, 0.5, 1),
+    max-height 0.4s cubic-bezier(0.25, 1, 0.5, 1),
+    border-radius 0.4s cubic-bezier(0.25, 1, 0.5, 1), box-shadow 0.3s ease;
+
+  overflow: hidden;
+  margin-right: 0px !important;
+  margin-top: 0px !important;
+
+  /* Collapsed Dimensions */
+  min-width: 44px;
+  min-height: 44px;
+  width: 44px;
+  max-height: 44px; /* Constrain height for animation */
+}
+
+/* Expanded State */
+.leaflet-control-layers-expanded {
+  width: 220px !important; /* Target Width */
+  max-height: 80vh !important; /* Target Height (allow growth) */
+
+  border-radius: 20px !important;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25) !important;
+  background: rgba(255, 255, 255, 0.98) !important;
+  backdrop-filter: blur(12px);
+  padding: 16px !important;
+}
+
+/* Base Toggler (Collapsed State) */
+.leaflet-control-layers-toggle {
+  width: 44px !important;
+  height: 44px !important;
+  background-image: none !important;
+  background-color: white; /* Ensure white base */
+  display: flex !important;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-main);
+  transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+  position: absolute;
+  top: 0;
+  right: 0;
+  z-index: 2;
+}
+
+.leaflet-control-layers-expanded .leaflet-control-layers-toggle {
+  opacity: 0;
+  pointer-events: none;
+  transform: scale(0.5) rotate(90deg);
+}
+
+.leaflet-control-layers-toggle::before {
+  content: "";
+  display: block;
+  width: 24px;
+  height: 24px;
+  background-color: currentColor;
+  -webkit-mask: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256"><path d="M224,104a8,8,0,0,1-16,0V59.31l-76,42.23a8,8,0,0,1-7.94,0l-76-42.23V104a8,8,0,0,1-16,0V48a8,8,0,0,1,4-7,8.06,8.06,0,0,1,8-1.55L128,88.45l87.94-48.86a8.06,8.06,0,0,1,8,1.55A8,8,0,0,1,228,48Z"></path><path d="M227.94,101.55l-96,53.33a8,8,0,0,1-7.94,0l-96-53.33a8,8,0,0,1,8-14l91.94,51,91.94-51a8,8,0,0,1,8,14Z" opacity="0.5"></path><path d="M227.94,157.55l-96,53.33a8,8,0,0,1-7.94,0l-96-53.33a8,8,0,0,1,8-14l91.94,51,91.94-51a8,8,0,0,1,8,14Z"></path></svg>')
+    no-repeat center / contain;
+  mask: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256"><path d="M224,104a8,8,0,0,1-16,0V59.31l-76,42.23a8,8,0,0,1-7.94,0l-76-42.23V104a8,8,0,0,1-16,0V48a8,8,0,0,1,4-7,8.06,8.06,0,0,1,8-1.55L128,88.45l87.94-48.86a8.06,8.06,0,0,1,8,1.55A8,8,0,0,1,228,48Z"></path><path d="M227.94,101.55l-96,53.33a8,8,0,0,1-7.94,0l-96-53.33a8,8,0,0,1,8-14l91.94,51,91.94-51a8,8,0,0,1,8,14Z" opacity="0.5"></path><path d="M227.94,157.55l-96,53.33a8,8,0,0,1-7.94,0l-96-53.33a8,8,0,0,1,8-14l91.94,51,91.94-51a8,8,0,0,1,8,14Z"></path></svg>')
+    no-repeat center / contain;
+}
+
+/* Internal List Content */
+.leaflet-control-layers-list {
+  opacity: 0;
+  transform: translateY(-8px) scale(0.98);
+  transition: all 0.3s ease;
+  pointer-events: none;
+  scrollbar-width: none;
+  -ms-overflow-style: none; /* IE/Edge */
+}
+.leaflet-control-layers-list::-webkit-scrollbar {
+  display: none;
+} /* Chrome/Safari */
+
+/* Animate Content IN */
+.leaflet-control-layers-expanded .leaflet-control-layers-list {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+  pointer-events: auto;
+  transition: opacity 0.4s 0.1s ease-out,
+    transform 0.5s 0.1s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Header - "MAP LAYERS" */
+.leaflet-control-layers-list::before {
+  content: "Map Layers";
+  display: flex !important;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.75rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  color: var(--primary-color);
+  margin-bottom: 12px;
+  letter-spacing: 1px;
+  padding-bottom: 10px;
+  border-bottom: 1px dashed rgba(0, 0, 0, 0.1);
+}
+
+/* Additional Close Icon inside List */
+.leaflet-control-layers-list::after {
+  content: "";
+  position: absolute;
+  top: 15px;
+  right: 0px;
+  width: 24px;
+  height: 24px;
+  background: var(--text-light);
+  -webkit-mask: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256"><path d="M213.66,101.66l-80,80a8,8,0,0,1-11.32,0l-80-80A8,8,0,0,1,53.66,90.34L128,164.69l74.34-74.35a8,8,0,0,1,11.32,11.32Z"></path></svg>')
+    no-repeat center / contain;
+  mask: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256"><path d="M213.66,101.66l-80,80a8,8,0,0,1-11.32,0l-80-80A8,8,0,0,1,53.66,90.34L128,164.69l74.34-74.35a8,8,0,0,1,11.32,11.32Z"></path></svg>')
+    no-repeat center / contain;
+  transform: rotate(180deg);
+  opacity: 0.3;
+}
+
+/* Layer Items */
+.leaflet-control-layers-base,
+.leaflet-control-layers-overlays {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.leaflet-control-layers-separator {
+  margin: 12px 0;
+  border-top: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+/* LABEL LAYOUT - Explicit Flex Row */
+.leaflet-control-layers label {
+  display: flex !important;
+  flex-direction: row !important; /* Force Side-by-Side */
+  align-items: center !important;
+  justify-content: flex-start !important;
+  padding: 8px 10px !important;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.25, 0.8, 0.25, 1);
+  border-radius: 12px;
+  margin: 0 !important;
+  background: transparent;
+  width: 100%;
+  white-space: nowrap !important; /* Prevent Vertical Stacking on load */
+}
+
+.leaflet-control-layers label:hover {
+  background: rgba(0, 0, 0, 0.03);
+  transform: translateX(4px);
+}
+
+.leaflet-control-layers label span {
+  font-size: 0.85rem;
+  color: var(--text-main);
+  font-weight: 500;
+  line-height: 1.3;
+  text-align: left;
+  flex: 1;
+}
+
+/* 
+   ---------------------------
+   CHECKBOX & RADIO STYLES 
+   ---------------------------
+*/
+
+/* Selector Box/Circle */
+.leaflet-control-layers-selector {
+  appearance: none;
+  width: 20px;
+  height: 20px;
+  border: 1.5px solid #cbd5e1;
+  border-radius: 6px; /* Soft square for checkbox */
+  margin-right: 12px !important; /* Space between checkbox and text */
+  margin-left: 0 !important;
+  margin-top: 0 !important;
+  margin-bottom: 0 !important;
+  position: relative;
+  cursor: pointer;
+  background: white;
+  transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+  flex-shrink: 0;
+  /* Removed display: grid to assume block/inline-block standard behavior relative to flex parent */
+}
+
+.leaflet-control-layers-selector:checked {
+  background: var(--primary-color);
+  border-color: var(--primary-color);
+  transform: scale(1.05);
+}
+
+/* Checkbox Icon (Checkmark) */
+input[type="checkbox"].leaflet-control-layers-selector:checked::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 5px;
+  height: 9px;
+  border: solid white;
+  border-width: 0 2px 2px 0; /* The L shape */
+  /* Perfect centering logic: */
+  transform: translate(-50%, -50%) rotate(45deg);
+  margin-top: -1px; /* Optical adjustment to move checkmark slightly up into visual center */
+}
+
+/* Radio Specifics */
+input[type="radio"].leaflet-control-layers-selector {
+  border-radius: 50%; /* Circle */
+}
+
+input[type="radio"].leaflet-control-layers-selector:checked::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 8px;
+  height: 8px;
+  background: white;
+  border-radius: 50%;
+  border: none;
+  transform: translate(-50%, -50%);
+}
+/* =========================================
+   DARK MODE OVERRIDES
+   ========================================= */
+
+[data-theme="dark"] .leaflet-control-layers,
+[data-theme="dark"] .leaflet-control-layers-toggle {
+  background: #1e293b !important; /* Dark Slate */
+  border-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+[data-theme="dark"] .leaflet-control-layers-toggle {
+  color: #f8fafc;
+}
+
+[data-theme="dark"] .leaflet-control-layers-expanded {
+  background: rgba(30, 41, 59, 0.95) !important; /* Dark Glass */
+  color: #f8fafc;
+}
+
+[data-theme="dark"] .leaflet-control-layers-list::before {
+  color: #818cf8; /* Light Indigo */
+  border-bottom-color: rgba(255, 255, 255, 0.1);
+}
+
+[data-theme="dark"] .leaflet-control-layers label span {
+  color: #cbd5e1;
+}
+
+[data-theme="dark"] .leaflet-control-layers label:hover {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+/* Dark Mode Checkboxes */
+[data-theme="dark"] .leaflet-control-layers-selector {
+  background: #0f172a;
+  border-color: #475569;
+}
+[data-theme="dark"] .leaflet-control-layers-selector:checked {
+  background: var(--primary-color);
+  border-color: var(--primary-color);
+}
+[data-theme="dark"] .leaflet-control-layers-list::after {
+  filter: invert(1);
+  opacity: 0.5;
+}

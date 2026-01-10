@@ -14,55 +14,31 @@ const UIUtils = {
 
   showLoading() {
     const loading = document.getElementById("loading");
-    if (loading) {
-      loading.classList.add("show");
-    }
+    if (loading) loading.classList.remove("hidden");
   },
 
   hideLoading() {
     const loading = document.getElementById("loading");
-    if (loading) {
-      loading.classList.remove("show");
-    }
+    if (loading) loading.classList.add("hidden");
   },
 
   showError(message) {
+    console.error(message);
     const errorDiv = document.createElement("div");
     errorDiv.className = "error-message";
     errorDiv.innerHTML = `<strong>Error:</strong> ${message}`;
     errorDiv.style.cssText = `
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            background: #ef4444;
-            color: white;
-            padding: 1rem 1.5rem;
-            border-radius: 12px;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
-            z-index: 10000;
-            max-width: 320px;
-            font-family: 'Poppins', sans-serif;
-            animation: slideIn 0.3s ease-out;
+            position: fixed; top: 20px; right: 20px; background: #ef4444; color: white;
+            padding: 1rem 1.5rem; border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+            z-index: 10000; max-width: 320px; animation: slideIn 0.3s ease-out;
         `;
-
     document.body.appendChild(errorDiv);
-
-    setTimeout(() => {
-      if (errorDiv.parentNode) {
-        errorDiv.style.animation = "slideOut 0.3s ease-in";
-        setTimeout(() => {
-          if (errorDiv.parentNode) {
-            errorDiv.parentNode.removeChild(errorDiv);
-          }
-        }, 300);
-      }
-    }, 5000);
+    setTimeout(() => errorDiv.remove(), 5000);
   },
 
   incrementStat(category) {
     if (this.stats.hasOwnProperty(category)) {
       this.stats[category]++;
-
       if (
         ["rumahSakit", "puskesmas", "klinik", "posyandu"].includes(category)
       ) {
@@ -88,25 +64,19 @@ const UIUtils = {
 
     Object.keys(elements).forEach((id) => {
       const element = document.getElementById(id);
-      if (element) {
-        this.animateNumber(element, 0, elements[id], 1000);
-      }
+      if (element) element.textContent = elements[id];
     });
 
     if (areaText) {
       const locElement = document.getElementById("total-locations");
       if (locElement) locElement.innerText = areaText;
     }
-
-    setTimeout(() => {
-      this.updateProgressBars();
-    }, 500);
+    this.updateProgressBars();
   },
 
   startRealtimeClock() {
     const clockElement = document.getElementById("realtime-clock");
     if (!clockElement) return;
-
     const updateTime = () => {
       const now = new Date();
       const timeString = now.toLocaleTimeString("id-ID", {
@@ -117,7 +87,6 @@ const UIUtils = {
       });
       clockElement.innerText = timeString + " WIB";
     };
-
     updateTime();
     setInterval(updateTime, 1000);
   },
@@ -128,74 +97,184 @@ const UIUtils = {
         this.stats.smp +
         this.stats.sma +
         this.stats.universitas || 1;
-    const totalHealth = this.stats.totalHealth || 1;
-
     const schoolPercentages = {
       sd: (this.stats.sd / totalSchools) * 100,
       smp: (this.stats.smp / totalSchools) * 100,
       sma: (this.stats.sma / totalSchools) * 100,
       univ: (this.stats.universitas / totalSchools) * 100,
     };
-
-    const healthPercentages = {
-      rs: (this.stats.rumahSakit / totalHealth) * 100,
-      puskesmas: (this.stats.puskesmas / totalHealth) * 100,
-      klinik: (this.stats.klinik / totalHealth) * 100,
-      posyandu: (this.stats.posyandu / totalHealth) * 100,
-    };
-
     this.setProgressBar("bar-sd", schoolPercentages.sd);
     this.setProgressBar("bar-smp", schoolPercentages.smp);
     this.setProgressBar("bar-sma", schoolPercentages.sma);
     this.setProgressBar("bar-univ", schoolPercentages.univ);
-
-    this.setProgressBar("bar-rs", healthPercentages.rs);
-    this.setProgressBar("bar-puskesmas", healthPercentages.puskesmas);
-    this.setProgressBar("bar-klinik", healthPercentages.klinik);
-    this.setProgressBar("bar-posyandu", healthPercentages.posyandu);
   },
 
   setProgressBar(id, percentage) {
     const bar = document.getElementById(id);
-    if (bar) {
-      bar.style.width = `${Math.round(percentage)}%`;
-    }
+    if (bar) bar.style.width = `${Math.round(percentage)}%`;
   },
 
-  animateNumber(element, start, end, duration) {
-    const startTime = performance.now();
-    const difference = end - start;
-
-    const step = (currentTime) => {
-      const elapsed = currentTime - startTime;
-      const progress = Math.min(elapsed / duration, 1);
-      const easeProgress = this.easeOutQuad(progress);
-      const current = Math.floor(start + difference * easeProgress);
-
-      element.textContent = current;
-
-      if (progress < 1) {
-        requestAnimationFrame(step);
-      } else {
-        element.textContent = end;
-      }
+  animateValue(obj, start, end, duration) {
+    let startTimestamp = null;
+    const step = (timestamp) => {
+      if (!startTimestamp) startTimestamp = timestamp;
+      const progress = Math.min((timestamp - startTimestamp) / duration, 1);
+      obj.innerHTML = Math.floor(progress * (end - start) + start);
+      if (progress < 1) window.requestAnimationFrame(step);
     };
-
-    requestAnimationFrame(step);
-  },
-
-  easeOutQuad(t) {
-    return t * (2 - t);
+    window.requestAnimationFrame(step);
   },
 
   initInfoPanel() {
-    const toggle = document.getElementById("info-toggle");
     const panel = document.getElementById("info-panel");
+    const closeBtn = document.getElementById("close-sidebar");
+    const dashboardBtn = document.getElementById("nav-dashboard-btn");
+    const aboutBtn = document.getElementById("nav-about-btn");
+    const themeBtn = document.getElementById("theme-toggle");
 
-    if (toggle && panel) {
-      toggle.addEventListener("click", () => {
-        panel.classList.toggle("active");
+    if (closeBtn && panel) {
+      closeBtn.addEventListener("click", () => {
+        if (window.innerWidth > 768) panel.classList.add("collapsed");
+        else panel.classList.remove("active");
       });
+    }
+
+    if (dashboardBtn) {
+      dashboardBtn.addEventListener("click", () => {
+        if (typeof DashboardUI !== "undefined") {
+          DashboardUI.open();
+        } else {
+          console.error("DashboardUI not loaded");
+        }
+      });
+    }
+
+    const mapBtns = document.querySelectorAll('[data-target="map"]');
+    mapBtns.forEach((btn) => {
+      btn.addEventListener("click", () => {
+        this.startExploration(false);
+        if (panel) panel.classList.add("collapsed");
+        if (window.innerWidth <= 768) panel.classList.remove("active");
+        document
+          .querySelectorAll(".glass-modal")
+          .forEach((m) => m.classList.add("hidden"));
+        this.updateNavState("map");
+      });
+    });
+
+    if (aboutBtn) {
+      aboutBtn.addEventListener("click", () => {
+        this.toggleModal("modal-about");
+        this.updateNavState("about");
+      });
+    }
+
+    if (themeBtn) {
+      themeBtn.addEventListener("click", () => this.toggleTheme());
+    }
+
+    this.initTheme();
+
+    const homeBtns = document.querySelectorAll('[data-target="home"]');
+    homeBtns.forEach((btn) => {
+      btn.addEventListener("click", () => {
+        if (panel) panel.classList.add("collapsed");
+        document
+          .querySelectorAll(".glass-modal")
+          .forEach((m) => m.classList.add("hidden"));
+        const landing = document.getElementById("landing-page");
+        if (landing) landing.classList.add("active");
+        document.body.classList.add("mode-landing");
+        this.updateNavState("home");
+      });
+    });
+  },
+
+  startExploration(openDashboard = false) {
+    const landing = document.getElementById("landing-page");
+    if (landing) landing.classList.remove("active");
+    document.body.classList.remove("mode-landing");
+
+    if (openDashboard) {
+      if (typeof DashboardUI !== "undefined") DashboardUI.open();
+    }
+  },
+
+  switchTab(btn, tabId) {
+    let container = btn.closest(".info-section");
+    let btnSelector = ".tab-btn";
+
+    if (!container) {
+      container = btn.closest(".landing-container");
+      btnSelector = ".tab-pill";
+    }
+
+    if (!container) return;
+
+    container
+      .querySelectorAll(btnSelector)
+      .forEach((b) => b.classList.remove("active"));
+
+    const allContents = document.querySelectorAll(".tab-content");
+    allContents.forEach((c) => {
+      if (
+        container.contains(c) ||
+        (container.classList.contains("landing-container") &&
+          document.querySelector(".landing-tab-contents").contains(c))
+      ) {
+        c.classList.remove("active");
+      }
+    });
+
+    btn.classList.add("active");
+    const tabContent = document.getElementById(tabId);
+    if (tabContent) tabContent.classList.add("active");
+  },
+
+  navigateToLandingTab(tabId) {
+    const btn = document.querySelector(
+      `.landing-tabs-nav button[onclick*="${tabId}"]`
+    );
+    if (btn) btn.click();
+  },
+
+  updateNavState(target) {
+    document
+      .querySelectorAll(".nav-link")
+      .forEach((btn) => btn.classList.remove("active"));
+    const activeBtn =
+      document.querySelector(`[data-target="${target}"]`) ||
+      document.getElementById(`nav-${target}-btn`);
+    if (activeBtn) activeBtn.classList.add("active");
+  },
+
+  toggleModal(modalId) {
+    const modal = document.getElementById(modalId);
+    if (modal) {
+      if (modal.classList.contains("hidden")) modal.classList.remove("hidden");
+      else modal.classList.add("hidden");
+    }
+  },
+
+  initTheme() {
+    const savedTheme = localStorage.getItem("theme") || "light";
+    document.documentElement.setAttribute("data-theme", savedTheme);
+    this.updateThemeIcon(savedTheme);
+  },
+
+  toggleTheme() {
+    const current = document.documentElement.getAttribute("data-theme");
+    const newTheme = current === "dark" ? "light" : "dark";
+    document.documentElement.setAttribute("data-theme", newTheme);
+    localStorage.setItem("theme", newTheme);
+    this.updateThemeIcon(newTheme);
+  },
+
+  updateThemeIcon(theme) {
+    const icon = document.getElementById("theme-icon");
+    if (icon) {
+      icon.className =
+        theme === "dark" ? "ph-duotone ph-sun" : "ph-duotone ph-moon-stars";
     }
   },
 };

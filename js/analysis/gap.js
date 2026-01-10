@@ -33,18 +33,18 @@ Object.assign(AnalysisUtils, {
       .bindPopup("Titik Gap Analysis")
       .openPopup();
     L.circle(latlng, {
-      radius: 1000,
+      radius: 500,
       color: "#ff7800",
       dashArray: "10, 10",
       fillColor: "#ff7800",
       fillOpacity: 0.15,
     }).addTo(this.state.analysisLayer);
     const from = turf.point(point);
-    const circleIdeal = turf.circle(from, 0.5, {
+    const circleIdeal = turf.circle(from, 0.25, {
       steps: 64,
       units: "kilometers",
     });
-    const circleStandard = turf.circle(from, 1.0, {
+    const circleStandard = turf.circle(from, 0.5, {
       steps: 64,
       units: "kilometers",
     });
@@ -62,17 +62,17 @@ Object.assign(AnalysisUtils, {
     let headerColor = "";
     if (countStandard > 0) {
       statusHeader =
-        "WELL SERVED<br><span style='font-size:0.7em; font-weight:normal;'>Akses Baik</span>";
+        "TERLAYANI<br><span style='font-size:0.7em; font-weight:normal;'>Akses Baik</span>";
       headerColor = "#28a745";
     } else {
       statusHeader =
-        "UNDERSERVED<br><span style='font-size:0.7em; font-weight:normal;'>Kurang Terlayani</span>";
+        "TIDAK TERLAYANI<br><span style='font-size:0.7em; font-weight:normal;'>Kurang Terlayani</span>";
       headerColor = "#dc3545";
     }
 
     const facilitiesIn1KM = this.state.allFacilities.filter((f) => {
       const to = turf.point(f.geometry.coordinates);
-      return turf.distance(from, to, { units: "kilometers" }) <= 1.0;
+      return turf.distance(from, to, { units: "kilometers" }) <= 0.5;
     });
 
     let typeCounts = {
@@ -108,31 +108,95 @@ Object.assign(AnalysisUtils, {
     let distributionHTML = "";
     for (const [key, value] of Object.entries(typeCounts)) {
       if (value > 0) {
-        distributionHTML += `<div style="display:flex; justify-content:space-between; margin-bottom:5px; font-size:0.85em; border-bottom:1px solid #eee; padding-bottom:3px;"><span style="color:#555;">${key}</span><span style="font-weight:bold; color:#333;">${value}</span></div>`;
+        distributionHTML += `
+          <div class="facility-list-item">
+            <span class="facility-name">${key}</span>
+            <span class="facility-count">${value}</span>
+          </div>`;
       }
     }
 
     if (distributionHTML === "") {
-      distributionHTML = `<div style="font-size:0.85em; color:#888; font-style:italic;">Tidak ada fasilitas dalam radius 1 km.</div>`;
+      distributionHTML = `<div style="font-size:0.85em; color:var(--text-secondary); font-style:italic; padding: 10px;">Tidak ada fasilitas dalam radius 500m.</div>`;
     }
 
     this.showResults(`
-        <div class="result-item" style="padding:0; border:none; box-shadow:none;">
-            <div style="background:${headerColor}; color:white; padding:15px; border-radius:8px; text-align:center; font-weight:700; font-size:1.1em; box-shadow:0 4px 6px rgba(0,0,0,0.1);">${statusHeader}</div>
-            <div style="margin-top:15px; padding:0 10px;">
-                <div style="margin-bottom:8px; font-size:0.9em; color:#444;">Zona Ideal (< 500m): <strong style="float:right;">${countIdeal} fasilitas</strong></div>
-                <div style="width:100%; background:#eee; height:6px; border-radius:3px; margin-bottom:12px;"><div style="width:${Math.min(
-                  (countIdeal / 10) * 100,
-                  100
-                )}%; background:#28a745; height:100%; border-radius:3px;"></div></div>
-                <div style="margin-bottom:8px; font-size:0.9em; color:#444;">Zona Standar (< 1km): <strong style="float:right;">${countStandard} fasilitas</strong></div>
-                <div style="width:100%; background:#eee; height:6px; border-radius:3px; margin-bottom:20px;"><div style="width:${Math.min(
-                  (countStandard / 10) * 100,
-                  100
-                )}%; background:#ffc107; height:100%; border-radius:3px;"></div></div>
-                <div style="background:#f9f9f9; padding:12px; border-radius:8px; border:1px solid #eee;">
-                    <h5 style="margin:0 0 10px 0; color:#2c3e50; font-size:0.9em;">Distribusi Tipe Fasilitas (1 KM):</h5>
-                    ${distributionHTML}
+        <div class="modern-result-card">
+            <div style="text-align:center; padding-bottom:16px; border-bottom:1px solid #f0f0f0; margin-bottom:16px;">
+                 <h4 style="margin:0; font-size:1.1rem; color:#475569; margin-bottom:8px;">Status Layanan Wilayah</h4>
+                 <div style="
+                    display: inline-block; 
+                    padding: 8px 16px; 
+                    border-radius: 50px; 
+                    background: ${headerColor}15; 
+                    color: ${headerColor}; 
+                    font-weight: 700; 
+                    font-size: 1rem;
+                    border: 1px solid ${headerColor}30;">
+                    ${countStandard > 0 ? "✅ TERLAYANI" : "⚠️ TIDAK TERLAYANI"}
+                 </div>
+                 <div style="font-size:0.85em; color:#64748b; margin-top:6px;">
+                    ${
+                      countStandard > 0
+                        ? "Area memiliki akses memadai ke fasilitas publik."
+                        : "Area urgensi tinggi, minim akses fasilitas publik."
+                    }
+                 </div>
+            </div>
+
+            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:12px; margin-bottom:20px;">
+                <div style="background:#f0fdf4; border:1px solid #bbf7d0; border-radius:12px; padding:12px; text-align:center;">
+                    <div style="font-size:1.8rem; font-weight:800; color:#16a34a; line-height:1;">${countIdeal}</div>
+                    <div style="font-size:0.75rem; color:#15803d; font-weight:600; margin-top:4px;">ZONA IDEAL</div>
+                    <div style="font-size:0.7rem; color:#4ade80;">Radius < 250m</div>
+                </div>
+                <div style="background:#fffbeb; border:1px solid #fde68a; border-radius:12px; padding:12px; text-align:center;">
+                    <div style="font-size:1.8rem; font-weight:800; color:#d97706; line-height:1;">${countStandard}</div>
+                    <div style="font-size:0.75rem; color:#b45309; font-weight:600; margin-top:4px;">ZONA STANDAR</div>
+                    <div style="font-size:0.7rem; color:#fcd34d;">Radius < 500m</div>
+                </div>
+            </div>
+
+            <div style="margin-bottom:20px;">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+                    <div style="font-size:0.9rem; font-weight:700; color:#334155;">Distribusi Fasilitas</div>
+                    <div style="font-size:0.75rem; color:#94a3b8; background:#f1f5f9; padding:2px 8px; border-radius:12px;">Radius 500m</div>
+                </div>
+                
+                <div style="background:#f8fafc; border-radius:12px; padding:4px; border:1px solid #e2e8f0;">
+                    ${
+                      distributionHTML !== ""
+                        ? `<div style="display:flex; flex-direction:column; gap:1px;">
+                            ${Object.entries(typeCounts)
+                              .filter(([_, val]) => val > 0)
+                              .map(
+                                ([key, val]) => `
+                                <div style="display:flex; justify-content:space-between; align-items:center; padding:10px 12px; background:white; border-radius:8px; margin-bottom:2px;">
+                                    <div style="display:flex; align-items:center; gap:8px;">
+                                        <div style="width:6px; height:6px; border-radius:50%; background:#64748b;"></div>
+                                        <span style="font-size:0.85rem; color:#475569; font-weight:500;">${key}</span>
+                                    </div>
+                                    <span style="font-weight:700; color:#1e293b; background:#f1f5f9; padding:2px 8px; border-radius:6px; font-size:0.85rem;">${val}</span>
+                                </div>`
+                              )
+                              .join("")}
+                           </div>`
+                        : `<div style="text-align:center; padding:20px; color:#94a3b8; font-size:0.9rem;">
+                              <i class="ph-duotone ph-warning-circle" style="font-size:1.5rem; margin-bottom:4px;"></i><br>
+                              Tidak ada fasilitas ditemukan
+                           </div>`
+                    }
+                </div>
+            </div>
+
+            <div class="highlight-box" style="background:#eff6ff; border-left:4px solid #3b82f6;">
+                <div class="highlight-title" style="color:#1d4ed8;"><i class="ph-fill ph-info"></i> Rekomendasi</div>
+                <div class="highlight-desc" style="color:#1e40af;">
+                    ${
+                      countStandard < 2
+                        ? "Kawasan ini <strong>High Priority</strong> untuk intervensi pembangunan. Disarankan penambahan fasilitas dasar (Klinik/Posyandu) untuk meningkatkan skor aksesibilitas."
+                        : "Kawasan ini memiliki aksesibilitas dasar. Fokus selanjutnya adalah peningkatan kualitas layanan atau diversifikasi jenis fasilitas."
+                    }
                 </div>
             </div>
         </div>`);
