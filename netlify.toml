@@ -1,0 +1,8 @@
+[build]
+  publish = "."
+  command = "node scripts/generate-env.js"
+
+[build.environment]
+  NODE_VERSION = "18"
+  # Skip secret scanning for env.js - API keys are intentionally client-side
+  SECRETS_SCAN_OMIT_PATHS = "js/env.js"
